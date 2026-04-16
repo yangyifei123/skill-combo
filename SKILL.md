@@ -69,7 +69,7 @@ The plugin provides both invoker implementations:
 **Execution Modes**:
 - `serial`: One skill after another ✅
 - `parallel`: Multiple simultaneously ✅
-- `interleaved`: Control alternation (requires OpenCode yield protocol)
+- `interleaved`: Control alternation ❌ (Deferred - requires OpenCode yield protocol)
 
 ## Examples
 
