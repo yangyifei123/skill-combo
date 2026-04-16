@@ -282,13 +282,14 @@ class Engine {
     }
     /**
      * Execute a conditional combo - select branch based on condition evaluation
-     * Branch is selected based on condition result (true/false)
-     * Supports: env, ctx, skill-output conditions
-     */
-    async executeConditional(condition, trueBranch, falseBranch, invoker) {
+      * Branch is selected based on condition result (true/false)
+      * Supports: env, ctx, skill-output conditions
+      * Note: skill-output conditions require context from previous steps
+      */
+    async executeConditional(condition, trueBranch, falseBranch, invoker, initialContext = {}) {
         const startTime = Date.now();
-        // Evaluate condition
-        const conditionResult = await this.evaluateCondition(condition, {});
+        // Evaluate condition with initial context
+        const conditionResult = await this.evaluateCondition(condition, initialContext);
         // Select branch
         const selectedBranch = conditionResult ? trueBranch : falseBranch;
         if (selectedBranch.length === 0) {

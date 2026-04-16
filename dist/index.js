@@ -16,7 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
+exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.loadDefaultCombos = exports.loadCombosFromDirectory = exports.loadComboFromFile = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
 var cli_1 = require("./cli");
 Object.defineProperty(exports, "CLI", { enumerable: true, get: function () { return cli_1.CLI; } });
 Object.defineProperty(exports, "DefaultInvoker", { enumerable: true, get: function () { return cli_1.DefaultInvoker; } });
@@ -29,6 +29,10 @@ Object.defineProperty(exports, "Registry", { enumerable: true, get: function () 
 var opencode_invoker_1 = require("./opencode-invoker");
 Object.defineProperty(exports, "OpenCodeInvoker", { enumerable: true, get: function () { return opencode_invoker_1.OpenCodeInvoker; } });
 Object.defineProperty(exports, "createOpenCodeInvoker", { enumerable: true, get: function () { return opencode_invoker_1.createOpenCodeInvoker; } });
+var combo_loader_1 = require("./combo-loader");
+Object.defineProperty(exports, "loadComboFromFile", { enumerable: true, get: function () { return combo_loader_1.loadComboFromFile; } });
+Object.defineProperty(exports, "loadCombosFromDirectory", { enumerable: true, get: function () { return combo_loader_1.loadCombosFromDirectory; } });
+Object.defineProperty(exports, "loadDefaultCombos", { enumerable: true, get: function () { return combo_loader_1.loadDefaultCombos; } });
 var scanner_1 = require("./scanner");
 Object.defineProperty(exports, "scanSkills", { enumerable: true, get: function () { return scanner_1.scanSkills; } });
 Object.defineProperty(exports, "parseSkillFile", { enumerable: true, get: function () { return scanner_1.parseSkillFile; } });

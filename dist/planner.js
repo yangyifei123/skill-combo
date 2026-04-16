@@ -37,11 +37,12 @@ class Planner {
     }
     /**
      * Suggest best combo for a task description
-     * DEFERRED to future iteration - requires NLP/analyzer
+     * @deprecated Not implemented - requires NLP task analysis
      */
     suggest(_taskDescription, _skills) {
-        // TODO: Implement combo suggestion based on task analysis
-        // For now, return empty array
+        // Not implemented - requires NLP task analysis to match user intent to combos
+        // Return empty array until this is implemented
+        console.warn('Planner.suggest() is not implemented - requires NLP integration');
         return [];
     }
     /**

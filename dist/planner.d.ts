@@ -12,7 +12,7 @@ export declare class Planner implements IPlanner {
     plan(combo: Combo, _skills: Skill[]): ExecutionPlan;
     /**
      * Suggest best combo for a task description
-     * DEFERRED to future iteration - requires NLP/analyzer
+     * @deprecated Not implemented - requires NLP task analysis
      */
     suggest(_taskDescription: string, _skills: Skill[]): Combo[];
     /**

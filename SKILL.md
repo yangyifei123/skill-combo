@@ -16,8 +16,9 @@ Skill-Combo is a **skill orchestration framework** for OpenCode that enables mul
 ## Use Cases
 
 - Chain research → analysis → writing skills for automated reports
-- Parallel execution of independent skills (planned)
-- Wrapper skills for common patterns (planned)
+- Parallel execution of independent skills
+- Wrapper skills for common patterns
+- Conditional execution based on context
 
 ## Usage
 
@@ -27,6 +28,7 @@ Skill-Combo is a **skill orchestration framework** for OpenCode that enables mul
 skill-combo scan     # Scan and index all skills
 skill-combo list     # List discovered skills
 skill-combo combos   # List registered combos
+skill-combo run      # Execute a combo (requires OpenCode runtime)
 ```
 
 ### As Module
@@ -47,18 +49,27 @@ This is an OpenCode plugin. Install by copying to your skills directory:
 cp -r skill-combo ~/.config/opencode/skills/
 ```
 
+## Runtime Requirements
+
+- **Local testing**: Use `DefaultInvoker` for mock execution
+- **OpenCode runtime**: Uses `OpenCodeInvoker` for real skill execution via OpenCode's skill() tool
+
+The plugin provides both invoker implementations:
+- `DefaultInvoker` - Mock execution for testing
+- `OpenCodeInvoker` - Real execution when loaded in OpenCode
+
 ## Technical Details
 
 **Combo Types**:
-- `chain`: Skills chained - output feeds to next
-- `parallel`: Skills run simultaneously (in development)
-- `wrap`: Wrapper around sub-combo (in development)
-- `conditional`: Branch based on condition (in development)
+- `chain`: Skills chained - output feeds to next ✅
+- `parallel`: Skills run simultaneously ✅
+- `wrap`: Wrapper around sub-combo ✅
+- `conditional`: Branch based on condition ✅
 
 **Execution Modes**:
 - `serial`: One skill after another ✅
-- `parallel`: Multiple simultaneously (in development)
-- `interleaved`: Control alternation (in development)
+- `parallel`: Multiple simultaneously ✅
+- `interleaved`: Control alternation (requires OpenCode yield protocol)
 
 ## Examples
 

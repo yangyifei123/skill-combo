@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultInvoker = exports.CLI = void 0;
 exports.main = main;
 const engine_1 = require("./engine");
+const combo_loader_1 = require("./combo-loader");
 const planner_1 = require("./planner");
 const registry_1 = require("./registry");
 const scanner_1 = require("./scanner");
@@ -17,6 +18,16 @@ class CLI {
         this.registry = new registry_1.Registry();
         this.planner = new planner_1.Planner();
         this.engine = new engine_1.Engine();
+        // Auto-load default combos
+        try {
+            const defaultCombos = (0, combo_loader_1.loadDefaultCombos)();
+            for (const combo of defaultCombos) {
+                this.registry.addCombo(combo);
+            }
+        }
+        catch (e) {
+            // Silently ignore if combo loading fails (e.g., not in Node.js context)
+        }
     }
     /**
      * Scan skill directories and populate registry
@@ -191,6 +202,7 @@ Commands:
   scan      - Scan skill directories and index skills
   list      - List all discovered skills
   combos    - List all registered combos
+  run       - Execute a combo by name (skill-combo run <combo-name>)
   help      - Show this help message
 `);
             break;

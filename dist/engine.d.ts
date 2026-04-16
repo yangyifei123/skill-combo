@@ -32,13 +32,14 @@ export declare class Engine implements IEngine {
     executeInterleaved(_steps: ExecutionStep[], _invoker: SkillInvoker): Promise<ComboResult>;
     /**
      * Execute a conditional combo - select branch based on condition evaluation
-     * Branch is selected based on condition result (true/false)
-     * Supports: env, ctx, skill-output conditions
-     */
+      * Branch is selected based on condition result (true/false)
+      * Supports: env, ctx, skill-output conditions
+      * Note: skill-output conditions require context from previous steps
+      */
     executeConditional(condition: {
         type: string;
         expression: string;
-    }, trueBranch: ExecutionStep[], falseBranch: ExecutionStep[], invoker: SkillInvoker): Promise<ComboResult>;
+    }, trueBranch: ExecutionStep[], falseBranch: ExecutionStep[], invoker: SkillInvoker, initialContext?: SkillContext): Promise<ComboResult>;
     /**
      * Evaluate a condition and return boolean result
      * Supports env (environment variables) and ctx (context) types
