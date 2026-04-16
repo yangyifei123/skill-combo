@@ -84,6 +84,34 @@ export class CLI {
   }
 
   /**
+   * Run a combo by name
+   */
+  async runCombo(
+    comboName: string,
+    invoker: SkillInvoker,
+    _initialContext?: SkillContext
+  ): Promise<{ success: boolean; outputs: any; errors: string[] }> {
+    const combo = this.registry.getCombo(comboName);
+    if (!combo) {
+      return {
+        success: false,
+        outputs: {},
+        errors: [`Combo not found: ${comboName}`],
+      };
+    }
+
+    const skills = this.registry.getAllSkills();
+    const plan = this.planner.plan(combo, skills);
+
+    const result = await this.engine.execute(combo, plan, invoker);
+    return {
+      success: result.success,
+      outputs: result.outputs,
+      errors: result.errors,
+    };
+  }
+
+  /**
    * Get planner for external use
    */
   getPlanner(): Planner {
@@ -157,6 +185,26 @@ export async function main(args: string[]): Promise<void> {
       result.combos.forEach(c => {
         console.log(`  - ${c.name} (${c.type}/${c.execution}): ${c.skills.join(' -> ')}`);
       });
+      break;
+    }
+
+    case 'run': {
+      const comboName = args[1];
+      if (!comboName) {
+        console.error('Usage: skill-combo run <combo-name>');
+        process.exit(1);
+      }
+      // Use DefaultInvoker for CLI (mock execution)
+      const invoker = new DefaultInvoker();
+      const result = await cli.runCombo(comboName, invoker);
+      if (result.success) {
+        console.log('Combo executed successfully!');
+        console.log('Outputs:', JSON.stringify(result.outputs, null, 2));
+      } else {
+        console.error('Combo execution failed:');
+        result.errors.forEach(e => console.error(`  - ${e}`));
+        process.exit(1);
+      }
       break;
     }
 

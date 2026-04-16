@@ -45,17 +45,47 @@ export class Engine implements IEngine {
     plan: ExecutionPlan,
     invoker: SkillInvoker
   ): Promise<ComboResult> {
-    switch (combo.execution) {
-      case 'serial':
-        return this.executeSerial(plan.steps, invoker);
-      case 'parallel':
-        // Deferred to future iteration
-        return this.executeParallel(plan.steps, invoker, plan.aggregation);
-      case 'interleaved':
-        // Deferred - requires yield protocol
-        return this.executeInterleaved(plan.steps, invoker);
+    // Handle combo types that have special execution semantics
+    switch (combo.type) {
+      case 'wrap': {
+        // Wrap combo: wrapper → [sub-steps] → wrapper
+        const wrapperSkillId = combo.skills[0];
+        const subSteps = plan.steps.filter(s => s.skill_id !== wrapperSkillId);
+        return this.executeWrap(wrapperSkillId, subSteps, invoker);
+      }
+
+      case 'conditional': {
+        // Conditional combo: evaluate condition and select branch
+        if (!combo.condition || !combo.branches) {
+          throw new Error('Conditional combo requires condition and branches');
+        }
+        const trueBranch = plan.steps.filter(s =>
+          combo.branches!.true.includes(s.skill_id)
+        );
+        const falseBranch = plan.steps.filter(s =>
+          combo.branches!.false.includes(s.skill_id)
+        );
+        return this.executeConditional(combo.condition, trueBranch, falseBranch, invoker);
+      }
+
+      case 'chain':
+      case 'parallel': {
+        // Standard execution modes
+        switch (combo.execution) {
+          case 'serial':
+            return this.executeSerial(plan.steps, invoker);
+          case 'parallel':
+            return this.executeParallel(plan.steps, invoker, plan.aggregation);
+          case 'interleaved':
+            // Deferred - requires yield protocol
+            return this.executeInterleaved(plan.steps, invoker);
+          default:
+            throw new Error(`Unknown execution mode: ${combo.execution}`);
+        }
+      }
+
       default:
-        throw new Error(`Unknown execution mode: ${combo.execution}`);
+        throw new Error(`Unknown combo type: ${combo.type}`);
     }
   }
 
@@ -194,8 +224,10 @@ export class Engine implements IEngine {
 
     // Execute all skills in parallel
     const startTime = Date.now();
+    // For parallel, each skill gets its own context (from step inputs)
+    // In a true parallel execution, skills don't share context until aggregation
     const results = await Promise.all(
-      steps.map(step => invoker.invoke(step.skill_id, {}))
+      steps.map(step => invoker.invoke(step.skill_id, step.inputs || {}))
     );
     const endTime = Date.now();
 
