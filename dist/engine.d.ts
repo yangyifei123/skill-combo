@@ -5,6 +5,7 @@ import { Combo, ComboResult, EngineConfig, ExecutionPlan, ExecutionStep, IEngine
  */
 export declare class Engine implements IEngine {
     private config;
+    private cache?;
     constructor(config?: EngineConfig);
     /**
      * Main entry point - dispatch to appropriate execution method
@@ -14,7 +15,7 @@ export declare class Engine implements IEngine {
      * Execute skills serially - each step waits for previous to complete
      * This is the MVP implementation for chain combos
      */
-    executeSerial(steps: ExecutionStep[], invoker: SkillInvoker): Promise<ComboResult>;
+    executeSerial(combo: Combo, steps: ExecutionStep[], invoker: SkillInvoker, initialContext?: Record<string, unknown>): Promise<ComboResult>;
     /**
      * Execute skills in parallel - all steps start simultaneously
      * Results aggregated at end according to aggregation strategy

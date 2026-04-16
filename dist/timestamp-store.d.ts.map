@@ -1,0 +1,1 @@
+{"version":3,"file":"timestamp-store.d.ts","sourceRoot":"","sources":["../src/timestamp-store.ts"],"names":[],"mappings":"AAKA,qBAAa,cAAc;IACzB,OAAO,CAAC,SAAS,CAAS;gBAEd,QAAQ,EAAE,MAAM;IAItB,oBAAoB,IAAI,OAAO,CAAC,MAAM,GAAG,SAAS,CAAC;IASnD,oBAAoB,CAAC,SAAS,EAAE,MAAM,GAAG,OAAO,CAAC,IAAI,CAAC;CAG7D"}

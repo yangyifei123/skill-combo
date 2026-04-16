@@ -36,7 +36,7 @@ describe('Engine - Serial Execution', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(true);
       expect(invoker.executionOrder).toEqual(['skill-a', 'skill-b']);
@@ -64,7 +64,7 @@ describe('Engine - Serial Execution', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.outputs['skill-a']).toBeDefined();
       expect(result.outputs['skill-b']).toBeDefined();
@@ -92,7 +92,7 @@ describe('Engine - Serial Execution', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.tokens_used).toBe(300);
     });
@@ -119,7 +119,7 @@ describe('Engine - Serial Execution', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.duration_ms).toBe(125);
     });
@@ -140,7 +140,7 @@ describe('Engine - Serial Execution', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(false);
       expect(result.errors).toContain('Skill A failed');
@@ -170,7 +170,7 @@ describe('Engine - Serial Execution', () => {
         { step: 2, skill_id: 'skill-c', depends_on: [1], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(false);
       // skill-c should not have been called
@@ -250,7 +250,7 @@ describe('Engine - Serial Execution', () => {
   describe('EDGE CASES - executeSerial', () => {
     it('should handle empty steps array', async () => {
       const invoker = new TestInvoker();
-      const result = await engine.executeSerial([], invoker);
+      const result = await engine.executeSerial({} as Combo, [], invoker, {});
 
       expect(result.success).toBe(true);
       expect(result.outputs).toEqual({});
@@ -273,7 +273,7 @@ describe('Engine - Serial Execution', () => {
         { step: 0, skill_id: 'only-skill', depends_on: [], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(true);
       expect(result.outputs['only-skill']).toEqual({ value: 42 });
@@ -288,7 +288,7 @@ describe('Engine - Serial Execution', () => {
         { step: 1, skill_id: 'should-not-run', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(false);
       expect(result.errors).toContain('Skill not available: unavailable-skill');
@@ -302,7 +302,7 @@ describe('Engine - Serial Execution', () => {
         { step: 0, skill_id: 'throwing-skill', depends_on: [], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
@@ -316,7 +316,7 @@ describe('Engine - Serial Execution', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      await engine.executeSerial(steps, invoker);
+      await engine.executeSerial({} as Combo, steps, invoker, {});
 
       // skill-b should have received context with skill-a's output
       const capturedContext = invoker.getContextForSkill('skill-b');
@@ -346,7 +346,7 @@ describe('Engine - Serial Execution', () => {
         { step: 0, skill_id: 'first', depends_on: [], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(true);
       // Should execute in step order: first (0), second (1)
@@ -777,7 +777,7 @@ describe('Engine - Step Level Tracking', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(true);
       expect(result.steps).toBeDefined();
@@ -818,7 +818,7 @@ describe('Engine - Step Level Tracking', () => {
         { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.steps).toHaveLength(1);
       const step = result.steps![0];
@@ -841,7 +841,7 @@ describe('Engine - Step Level Tracking', () => {
         { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(false);
       expect(result.steps).toHaveLength(1);
@@ -858,7 +858,7 @@ describe('Engine - Step Level Tracking', () => {
         { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       expect(result.success).toBe(false);
       expect(result.steps).toBeDefined();
@@ -889,7 +889,7 @@ describe('Engine - Step Level Tracking', () => {
         { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
       ];
 
-      const result = await engine.executeSerial(steps, invoker);
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
 
       const step = result.steps![0];
       const calculatedDuration = step.timing.end_time - step.timing.start_time;
@@ -898,7 +898,7 @@ describe('Engine - Step Level Tracking', () => {
 
     it('should track empty steps array', async () => {
       const invoker = new TestInvoker();
-      const result = await engine.executeSerial([], invoker);
+      const result = await engine.executeSerial({} as Combo, [], invoker, {});
 
       expect(result.success).toBe(true);
       expect(result.steps).toEqual([]);
@@ -972,3 +972,127 @@ class ParallelTestInvoker implements SkillInvoker {
     return true;
   }
 }
+
+describe('Engine - Cache Integration', () => {
+  let engine: Engine;
+
+  beforeEach(() => {
+    engine = new Engine();
+  });
+
+  describe('executeSerial with cache', () => {
+    it('should skip invoker on cache hit', async () => {
+      const invoker = new TestInvoker();
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: true,
+        result: { data: 'from-a' },
+        tokens_used: 100,
+        duration_ms: 50,
+      });
+
+      // Create cache with pre-filled result
+      const cache = new (await import('../src/cache')).MemoryCache();
+      await cache.set(
+        (await import('../src/cache')).computeCacheKey('skill-a', {}),
+        {
+          skill_id: 'skill-a',
+          success: true,
+          result: { data: 'cached-data' },
+          tokens_used: 10,
+          duration_ms: 5,
+        }
+      );
+
+      engine = new Engine({ cache });
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
+
+      expect(result.success).toBe(true);
+      // Should use cached result, not invoker result
+      expect(result.outputs['skill-a']).toEqual({ data: 'cached-data' });
+      // Invoker should not have been called
+      expect(invoker.executionOrder).toEqual([]);
+    });
+
+    it('should invoke and cache on cache miss', async () => {
+      const invoker = new TestInvoker();
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: true,
+        result: { data: 'fresh-data' },
+        tokens_used: 100,
+        duration_ms: 50,
+      });
+
+      const cache = new (await import('../src/cache')).MemoryCache();
+      engine = new Engine({ cache });
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeSerial({} as Combo, steps, invoker, {});
+
+      expect(result.success).toBe(true);
+      expect(result.outputs['skill-a']).toEqual({ data: 'fresh-data' });
+      expect(invoker.executionOrder).toEqual(['skill-a']);
+
+      // Verify result was cached
+      const cached = await cache.has(
+        (await import('../src/cache')).computeCacheKey('skill-a', {})
+      );
+      expect(cached).toBe(true);
+    });
+
+    it('should use cache for deduplication based on skill_id and inputs', async () => {
+      const invoker = new TestInvoker();
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: true,
+        result: { data: 'first-call' },
+        tokens_used: 100,
+        duration_ms: 50,
+      });
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: true,
+        result: { data: 'second-call' },
+        tokens_used: 100,
+        duration_ms: 50,
+      });
+
+      const cache = new (await import('../src/cache')).MemoryCache();
+      engine = new Engine({ cache });
+
+      // First execution with inputs { key: 'value1' }
+      const steps1: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: { key: 'value1' } },
+      ];
+      const result1 = await engine.executeSerial({} as Combo, steps1, invoker, {});
+      expect(result1.outputs['skill-a']).toEqual({ data: 'first-call' });
+
+      // Second execution with same inputs should use cache
+      const steps2: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: { key: 'value1' } },
+      ];
+      const result2 = await engine.executeSerial({} as Combo, steps2, invoker, {});
+      expect(result2.outputs['skill-a']).toEqual({ data: 'first-call' }); // cached
+
+      // Only one invocation should have occurred
+      expect(invoker.executionOrder).toEqual(['skill-a']);
+
+      // Third execution with different inputs should invoke again
+      const steps3: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: { key: 'value2' } },
+      ];
+      const result3 = await engine.executeSerial({} as Combo, steps3, invoker, {});
+      expect(result3.outputs['skill-a']).toEqual({ data: 'second-call' }); // fresh (second setNextOutput)
+      expect(invoker.executionOrder).toEqual(['skill-a', 'skill-a']);
+    });
+  });
+});

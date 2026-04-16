@@ -8,6 +8,7 @@
  * 3. Should parse SKILL.md files and extract metadata
  * 4. Should handle missing/invalid SKILL.md gracefully
  * 5. Should return list of discovered skills with metadata
+ * 6. Should support incremental scanning based on mtime
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -55,6 +56,7 @@ exports.extractOutputs = extractOutputs;
 exports.extractCompatibility = extractCompatibility;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+const timestamp_store_1 = require("./timestamp-store");
 const SKILL_LOCATIONS = [
     path.join(process.env.HOME || process.env.USERPROFILE || '', '.config', 'opencode', 'skills'),
     path.join(process.env.HOME || process.env.USERPROFILE || '', '.agents', 'skills'),
@@ -62,51 +64,92 @@ const SKILL_LOCATIONS = [
 exports.SKILL_LOCATIONS = SKILL_LOCATIONS;
 const SKILL_FILE = 'SKILL.md';
 /**
- * Scans all skill directories and returns discovered skills
+ * SkillScanner - Internal class for scanning skills with mtime filtering
  */
-async function scanSkills() {
-    const skills = [];
-    const errors = [];
-    for (const location of SKILL_LOCATIONS) {
-        if (fs.existsSync(location)) {
-            await scanDirectory(location, skills, errors);
+class SkillScanner {
+    setMinMtime(timestamp) {
+        this.minMtime = timestamp;
+    }
+    /**
+     * Check if a file should be included based on mtime
+     */
+    shouldIncludeFile(filePath) {
+        if (!this.minMtime)
+            return true;
+        try {
+            const stat = fs.statSync(filePath);
+            return stat.mtimeMs > this.minMtime;
+        }
+        catch {
+            return true;
         }
     }
-    return {
-        skills,
-        errors,
-        timestamp: Date.now(),
-    };
-}
-/**
- * Recursively scans a directory for skills
- */
-async function scanDirectory(dir, skills, errors) {
-    let entries;
-    try {
-        entries = fs.readdirSync(dir, { withFileTypes: true });
-    }
-    catch (err) {
-        errors.push({ location: dir, error: `Cannot read directory: ${err}` });
-        return;
-    }
-    for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-            // Check if this directory contains a SKILL.md file
-            const skillFile = path.join(fullPath, SKILL_FILE);
-            if (fs.existsSync(skillFile)) {
-                const skill = await parseSkillFile(skillFile);
-                if (skill) {
-                    skills.push(skill);
+    /**
+     * Recursively scans a directory for skills
+     */
+    async scanDirectory(dir, skills, errors) {
+        let entries;
+        try {
+            entries = fs.readdirSync(dir, { withFileTypes: true });
+        }
+        catch (err) {
+            errors.push({ location: dir, error: `Cannot read directory: ${err}` });
+            return;
+        }
+        for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                // Check if this directory contains a SKILL.md file
+                const skillFile = path.join(fullPath, SKILL_FILE);
+                if (fs.existsSync(skillFile)) {
+                    // Skip if incremental scan and file is not modified
+                    if (!this.shouldIncludeFile(skillFile)) {
+                        continue;
+                    }
+                    const skill = await parseSkillFile(skillFile);
+                    if (skill) {
+                        skills.push(skill);
+                    }
+                }
+                else {
+                    // Recurse into subdirectories
+                    await this.scanDirectory(fullPath, skills, errors);
                 }
             }
-            else {
-                // Recurse into subdirectories
-                await scanDirectory(fullPath, skills, errors);
-            }
         }
     }
+    /**
+     * Scans all skill directories and returns discovered skills
+     */
+    async scan(skillDirs) {
+        const skills = [];
+        const errors = [];
+        for (const location of skillDirs) {
+            if (fs.existsSync(location)) {
+                await this.scanDirectory(location, skills, errors);
+            }
+        }
+        return skills;
+    }
+}
+/**
+ * Scans all skill directories and returns discovered skills
+ */
+async function scanSkills(skillDirs = SKILL_LOCATIONS, options = {}) {
+    const { incremental = true, force = false } = options;
+    const scanner = new SkillScanner();
+    const store = new timestamp_store_1.TimestampStore(process.cwd());
+    if (incremental && !force) {
+        const lastScan = await store.getLastScanTimestamp();
+        if (lastScan) {
+            scanner.setMinMtime(lastScan);
+        }
+    }
+    // 执行扫描...
+    const skills = await scanner.scan(skillDirs);
+    // 保存时间戳
+    await store.setLastScanTimestamp(Date.now());
+    return { skills, errors: [], timestamp: Date.now() };
 }
 /**
  * Parses a SKILL.md file and extracts skill metadata

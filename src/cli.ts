@@ -303,6 +303,166 @@ export class CLI {
   getRegistry(): Registry {
     return this.registry;
   }
+
+  /**
+   * Display help for a specific subcommand or general help
+   */
+  async help(args: string[]): Promise<void> {
+    if (args.length > 0) {
+      const subcommand = args[0];
+      switch (subcommand) {
+        case 'scan':
+          this.printScanHelp();
+          break;
+        case 'run':
+          this.printRunHelp();
+          break;
+        case 'list':
+          this.printListHelp();
+          break;
+        case 'combos':
+          this.printCombosHelp();
+          break;
+        default:
+          console.log(`Unknown command: ${subcommand}`);
+          this.printHelp();
+      }
+    } else {
+      this.printHelp();
+    }
+  }
+
+  /**
+   * Print general help message
+   */
+  printHelp(): void {
+    console.log(`
+skill-combo CLI
+
+Commands:
+  scan      - Scan skill directories and index skills
+  list      - List all discovered skills
+  combos    - List all registered combos
+  run       - Execute a combo by name
+  help      - Show this help message
+
+Use 'skill-combo help <command>' for detailed help on a specific command.
+
+Options:
+  --debug   - Enable debug mode (also enabled via DEBUG=1 environment variable)
+  --dry-run - Show execution plan without actually executing skills
+  --verbose - Show detailed execution statistics (token usage and timing per step)
+`);
+  }
+
+  /**
+   * Print detailed help for scan command
+   */
+  printScanHelp(): void {
+    console.log(`
+skill-combo scan - Scan skill directories and index skills
+
+Usage:
+  skill-combo scan
+
+Description:
+  Scans the OpenCode skills directories to discover and index all available skills.
+  The scan results are stored in the registry and can be accessed using the 'list' command.
+
+Examples:
+  skill-combo scan
+
+Output:
+  Shows the number of skills found and any errors encountered during scanning.
+`);
+  }
+
+  /**
+   * Print detailed help for run command
+   */
+  printRunHelp(): void {
+    console.log(`
+skill-combo run - Execute a combo by name
+
+Usage:
+  skill-combo run <combo-name> [options]
+
+Arguments:
+  combo-name    Name of the combo to execute
+
+Options:
+  --debug       Enable debug mode with detailed execution information
+  --dry-run     Show execution plan without actually executing skills
+  --verbose     Show detailed execution statistics (token usage and timing per step)
+
+Examples:
+  skill-combo run research-report
+  skill-combo run my-combo --debug
+  skill-combo run my-combo --dry-run
+  skill-combo run my-combo --verbose
+
+Description:
+  Executes a registered combo by name. The combo must be registered in the system
+  before it can be executed. Use 'skill-combo combos' to see available combos.
+
+Debug Mode:
+  When --debug is enabled, detailed information about the execution plan and
+  skill chain is displayed.
+
+Dry-Run Mode:
+  When --dry-run is enabled, the execution plan is displayed without actually
+  executing any skills. This is useful for understanding what would happen.
+
+Verbose Mode:
+  When --verbose is enabled, detailed statistics including token usage and
+  execution time per step are shown after execution completes.
+`);
+  }
+
+  /**
+   * Print detailed help for list command
+   */
+  printListHelp(): void {
+    console.log(`
+skill-combo list - List all discovered skills
+
+Usage:
+  skill-combo list
+
+Description:
+  Lists all skills that have been discovered by the scan command.
+  Use 'skill-combo scan' first to discover skills.
+
+Examples:
+  skill-combo list
+
+Output:
+  Shows the total count of skills and lists each skill with its ID and description.
+`);
+  }
+
+  /**
+   * Print detailed help for combos command
+   */
+  printCombosHelp(): void {
+    console.log(`
+skill-combo combos - List all registered combos
+
+Usage:
+  skill-combo combos
+
+Description:
+  Lists all combo definitions that are registered in the system.
+  Combos are skill chains that can be executed together.
+
+Examples:
+  skill-combo combos
+
+Output:
+  Shows the total count of combos and lists each combo with its name, type,
+  execution mode, and the skill chain it contains.
+`);
+  }
 }
 
 /**
@@ -411,21 +571,8 @@ export async function main(args: string[]): Promise<void> {
 
     case 'help':
     default: {
-      console.log(`
-skill-combo CLI
-
-Commands:
-  scan      - Scan skill directories and index skills
-  list      - List all discovered skills
-  combos    - List all registered combos
-  run       - Execute a combo by name (skill-combo run <combo-name> [--debug] [--dry-run] [--verbose])
-  help      - Show this help message
-
-Options:
-  --debug   - Enable debug mode (also enabled via DEBUG=1 environment variable)
-  --dry-run - Show execution plan without actually executing skills
-  --verbose - Show detailed execution statistics (token usage and timing per step)
-`);
+      // Pass remaining args to help (e.g., 'help run' -> ['run'])
+      await cli.help(args.slice(1));
       break;
     }
   }

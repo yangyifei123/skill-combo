@@ -16,7 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.loadDefaultCombos = exports.loadCombosFromDirectory = exports.loadComboFromFile = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
+exports.computeCacheKey = exports.MemoryCache = exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.loadDefaultCombos = exports.loadCombosFromDirectory = exports.loadComboFromFile = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
 var cli_1 = require("./cli");
 Object.defineProperty(exports, "CLI", { enumerable: true, get: function () { return cli_1.CLI; } });
 Object.defineProperty(exports, "DefaultInvoker", { enumerable: true, get: function () { return cli_1.DefaultInvoker; } });
@@ -37,5 +37,8 @@ var scanner_1 = require("./scanner");
 Object.defineProperty(exports, "scanSkills", { enumerable: true, get: function () { return scanner_1.scanSkills; } });
 Object.defineProperty(exports, "parseSkillFile", { enumerable: true, get: function () { return scanner_1.parseSkillFile; } });
 Object.defineProperty(exports, "parseSkillMarkdown", { enumerable: true, get: function () { return scanner_1.parseSkillMarkdown; } });
+var cache_1 = require("./cache");
+Object.defineProperty(exports, "MemoryCache", { enumerable: true, get: function () { return cache_1.MemoryCache; } });
+Object.defineProperty(exports, "computeCacheKey", { enumerable: true, get: function () { return cache_1.computeCacheKey; } });
 __exportStar(require("./types"), exports);
 //# sourceMappingURL=index.js.map

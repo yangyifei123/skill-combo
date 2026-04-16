@@ -3,6 +3,38 @@ import { Planner } from './planner';
 import { Registry } from './registry';
 import { SkillInvoker, SkillContext, SkillOutput } from './types';
 /**
+ * CLI configuration options
+ */
+export interface CLIConfig {
+    verbose?: boolean;
+    debug?: boolean;
+    dryRun?: boolean;
+    output?: 'json' | 'text';
+}
+/**
+ * Step execution stats for verbose output
+ */
+export interface StepStats {
+    skill_id: string;
+    tokens_used: number;
+    duration_ms: number;
+}
+/**
+ * Full execution result with stats
+ */
+export interface RunResult {
+    success: boolean;
+    outputs: Record<string, any>;
+    errors: string[];
+    dryRun?: boolean;
+    plan?: any;
+    stats?: {
+        steps: StepStats[];
+        totalTokens: number;
+        totalDuration: number;
+    };
+}
+/**
  * CLI exports functions for command-line usage
  * Can be used directly or wrapped by OpenCode integration
  */
@@ -10,7 +42,8 @@ export declare class CLI {
     private registry;
     private planner;
     private engine;
-    constructor();
+    private config;
+    constructor(config?: CLIConfig);
     /**
      * Scan skill directories and populate registry
      */
@@ -37,13 +70,18 @@ export declare class CLI {
      */
     registerCombo(combo: any): void;
     /**
-     * Run a combo by name
+     * Check if debug mode is enabled
      */
-    runCombo(comboName: string, invoker: SkillInvoker, _initialContext?: SkillContext): Promise<{
-        success: boolean;
-        outputs: any;
-        errors: string[];
-    }>;
+    isDebug(): boolean;
+    /**
+     * Run a combo by name
+     * @param dryRun If true, only display the execution plan without actually executing skills
+     */
+    runCombo(comboName: string, invoker: SkillInvoker, _initialContext?: SkillContext, dryRun?: boolean): Promise<RunResult>;
+    /**
+     * Display execution plan information for dry-run mode
+     */
+    private displayPlan;
     /**
      * Get planner for external use
      */
@@ -56,6 +94,30 @@ export declare class CLI {
      * Get registry for external use
      */
     getRegistry(): Registry;
+    /**
+     * Display help for a specific subcommand or general help
+     */
+    help(args: string[]): Promise<void>;
+    /**
+     * Print general help message
+     */
+    printHelp(): void;
+    /**
+     * Print detailed help for scan command
+     */
+    printScanHelp(): void;
+    /**
+     * Print detailed help for run command
+     */
+    printRunHelp(): void;
+    /**
+     * Print detailed help for list command
+     */
+    printListHelp(): void;
+    /**
+     * Print detailed help for combos command
+     */
+    printCombosHelp(): void;
 }
 /**
  * Default invoker that provides mock execution for testing

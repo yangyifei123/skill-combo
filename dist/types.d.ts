@@ -58,6 +58,8 @@ export interface Combo {
     sub_combo?: string[];
     /** Input/output schema for validation */
     schema?: ComboSchema;
+    /** Default timeout for all steps in this combo (ms) */
+    timeout?: number;
 }
 export interface ComboSchema {
     input: Record<string, string>;
@@ -78,6 +80,8 @@ export interface ExecutionStep {
     skill_id: string;
     depends_on: number[];
     inputs: Record<string, any>;
+    /** Timeout for this step in milliseconds (optional) */
+    timeout?: number;
 }
 export interface ScanResult {
     skills: Skill[];
@@ -244,7 +248,7 @@ export interface IEngine {
      * Execute skills serially (chain combo)
      * Each step waits for previous to complete
      */
-    executeSerial(steps: ExecutionStep[], invoker: SkillInvoker): Promise<ComboResult>;
+    executeSerial(combo: Combo, steps: ExecutionStep[], invoker: SkillInvoker, initialContext?: Record<string, unknown>): Promise<ComboResult>;
     /**
      * Execute skills in parallel (parallel combo)
      * All steps start simultaneously, results aggregated at end
@@ -294,6 +298,17 @@ export interface EngineConfig {
     maxSteps?: number;
     /** Default timeout per skill in ms (default: 5 minutes) */
     skillTimeout?: number;
+    /** Optional cache for result deduplication */
+    cache?: Cache;
+}
+/**
+ * Cache interface for result deduplication
+ */
+export interface Cache {
+    get(key: string): Promise<unknown | undefined>;
+    set(key: string, value: unknown): Promise<void>;
+    has(key: string): Promise<boolean>;
+    clear(): Promise<void>;
 }
 /**
  * NotImplementedError - thrown when a deferred feature is called

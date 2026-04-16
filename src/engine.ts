@@ -15,13 +15,15 @@ import {
   SkillOutput,
   StepResult,
 } from './types';
+import { Cache, computeCacheKey } from './cache';
 
 /**
  * Engine implements IEngine for skill combo orchestration
  * MVP supports serial execution only
  */
 export class Engine implements IEngine {
-  private config: Required<EngineConfig>;
+  private config: Required<Omit<EngineConfig, 'cache'>>;
+  private cache?: Cache;
 
   constructor(config: EngineConfig = {}) {
     this.config = {
@@ -29,6 +31,7 @@ export class Engine implements IEngine {
       maxSteps: config.maxSteps ?? 100,
       skillTimeout: config.skillTimeout ?? 300000, // 5 min default
     };
+    this.cache = config.cache;
     // Validate config early
     if (config.maxContextSize !== undefined && config.maxContextSize <= 0) {
       throw new Error('maxContextSize must be positive');
@@ -74,7 +77,7 @@ export class Engine implements IEngine {
         // Standard execution modes
         switch (combo.execution) {
           case 'serial':
-            return this.executeSerial(plan.steps, invoker);
+            return this.executeSerial(combo, plan.steps, invoker, {});
           case 'parallel':
             return this.executeParallel(plan.steps, invoker, plan.aggregation);
           case 'interleaved':
@@ -95,10 +98,12 @@ export class Engine implements IEngine {
    * This is the MVP implementation for chain combos
    */
   async executeSerial(
+    combo: Combo,
     steps: ExecutionStep[],
-    invoker: SkillInvoker
+    invoker: SkillInvoker,
+    initialContext: Record<string, unknown> = {}
   ): Promise<ComboResult> {
-    const outputs: Record<string, any> = {};
+    const outputs: Record<string, any> = { ...initialContext };
     const errors: string[] = [];
     let totalTokens = 0;
     let totalDuration = 0;
@@ -139,15 +144,73 @@ export class Engine implements IEngine {
       // Build context for this step from previous outputs
       const context = this.buildContext(step, outputs);
 
+      // Compute cache key for deduplication (based on skill_id + step inputs)
+      const cacheKey = computeCacheKey(step.skill_id, step.inputs || {});
+
+      // Check cache for existing result
+      let output: SkillOutput | undefined;
+      if (this.cache) {
+        const cached = await this.cache.get(cacheKey);
+        if (cached !== undefined) {
+          output = cached as SkillOutput;
+        }
+      }
+
       // Record step start time
       const stepStartTime = Date.now();
       let stepOutput: unknown = undefined;
       let stepError: string | undefined = undefined;
       let stepTokensUsed = 0;
 
-      // Execute the skill
-      try {
-        const output = await invoker.invoke(step.skill_id, context);
+      // Execute the skill if not cached
+      if (!output) {
+        // Determine timeout: step-level override > combo-level default > engine config
+        const timeout = step.timeout ?? combo.timeout ?? this.config.skillTimeout;
+
+        try {
+          output = await Promise.race([
+            invoker.invoke(step.skill_id, context),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error(`Skill ${step.skill_id} timed out after ${timeout}ms`)), timeout)
+            )
+          ]);
+
+          // Store result in cache for future deduplication
+          if (this.cache && output) {
+            await this.cache.set(cacheKey, output);
+          }
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          stepError = `Execution error for ${step.skill_id}: ${errorMsg}`;
+          errors.push(stepError);
+          const stepEndTime = Date.now();
+          stepResults.push({
+            step_id: step.skill_id,
+            skill_id: step.skill_id,
+            success: false,
+            timing: {
+              start_time: stepStartTime,
+              end_time: stepEndTime,
+              duration_ms: stepEndTime - stepStartTime,
+            },
+            tokens_used: stepTokensUsed,
+            output: undefined,
+            error: stepError,
+          });
+          return {
+            success: false,
+            outputs,
+            errors,
+            tokens_used: totalTokens,
+            duration_ms: totalDuration,
+            aggregation: 'merge',
+            steps: stepResults,
+          };
+        }
+      }
+
+      // Process output (both cached and fresh)
+      if (output) {
         totalTokens += output.tokens_used;
         totalDuration += output.duration_ms;
         stepTokensUsed = output.tokens_used;
@@ -183,33 +246,6 @@ export class Engine implements IEngine {
             steps: stepResults,
           };
         }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        stepError = `Execution error for ${step.skill_id}: ${errorMsg}`;
-        errors.push(stepError);
-        const stepEndTime = Date.now();
-        stepResults.push({
-          step_id: step.skill_id,
-          skill_id: step.skill_id,
-          success: false,
-          timing: {
-            start_time: stepStartTime,
-            end_time: stepEndTime,
-            duration_ms: stepEndTime - stepStartTime,
-          },
-          tokens_used: stepTokensUsed,
-          output: undefined,
-          error: stepError,
-        });
-        return {
-          success: false,
-          outputs,
-          errors,
-          tokens_used: totalTokens,
-          duration_ms: totalDuration,
-          aggregation: 'merge',
-          steps: stepResults,
-        };
       }
 
       // Record successful step result
@@ -367,7 +403,7 @@ export class Engine implements IEngine {
 
     // Phase 2: Execute sub-steps serially
     if (subSteps.length > 0) {
-      const subResult = await this.executeSerial(subSteps, invoker);
+      const subResult = await this.executeSerial({} as Combo, subSteps, invoker, outputs);
       totalTokens += subResult.tokens_used;
       totalDuration += subResult.duration_ms;
 
@@ -449,7 +485,7 @@ export class Engine implements IEngine {
     }
 
     // Execute selected branch serially
-    const result = await this.executeSerial(selectedBranch, invoker);
+    const result = await this.executeSerial({} as Combo, selectedBranch, invoker, initialContext);
     result.duration_ms = Date.now() - startTime;
 
     return result;

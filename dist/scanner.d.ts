@@ -7,13 +7,18 @@
  * 3. Should parse SKILL.md files and extract metadata
  * 4. Should handle missing/invalid SKILL.md gracefully
  * 5. Should return list of discovered skills with metadata
+ * 6. Should support incremental scanning based on mtime
  */
 import { Skill, ScanResult } from './types';
 declare const SKILL_LOCATIONS: string[];
+export interface ScanOptions {
+    incremental?: boolean;
+    force?: boolean;
+}
 /**
  * Scans all skill directories and returns discovered skills
  */
-export declare function scanSkills(): Promise<ScanResult>;
+export declare function scanSkills(skillDirs?: string[], options?: ScanOptions): Promise<ScanResult>;
 /**
  * Parses a SKILL.md file and extracts skill metadata
  */
