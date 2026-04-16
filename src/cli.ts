@@ -228,6 +228,7 @@ Commands:
   scan      - Scan skill directories and index skills
   list      - List all discovered skills
   combos    - List all registered combos
+  run       - Execute a combo by name (skill-combo run <combo-name>)
   help      - Show this help message
 `);
       break;

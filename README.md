@@ -71,18 +71,18 @@ const result = await engine.execute(combo, plan, invoker);
 
 | Type | Description |
 |------|-------------|
-| `chain` | Skills chained - output feeds to next |
-| `parallel` | Skills run independently (planned) |
-| `wrap` | Wrapper skill around sub-combo (planned) |
-| `conditional` | Branch based on condition (planned) |
+| `chain` | Skills chained - output feeds to next ✅ |
+| `parallel` | Skills run independently ✅ |
+| `wrap` | Wrapper skill around sub-combo ✅ |
+| `conditional` | Branch based on condition ✅ |
 
 ## Execution Modes
 
 | Mode | Description |
 |------|-------------|
 | `serial` | One skill after another ✅ |
-| `parallel` | Multiple skills simultaneously (planned) |
-| `interleaved` | Control alternates at yield points (planned) |
+| `parallel` | Multiple skills simultaneously ✅ |
+| `interleaved` | Control alternates at yield points (in development) |
 
 ## Configuration
 
