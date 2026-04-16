@@ -361,27 +361,26 @@ For iteration 1, we implement:
 5. ✅ Plugin structure - installable SKILL.md
 
 **Extended (Later Iterations):**
-- Parallel execution (executeParallel)
 - Interleaved execution (executeInterleaved) - requires yield protocol definition
-- Conditional combos (evaluateCondition) - requires security model
-- Natural language integration (suggest)
-- Token optimization
+- js-expression condition evaluation - requires security model for safe eval
+- Natural language integration (Planner.suggest) - NLP not implemented
+- Token optimization tracking
 - Error recovery strategies
 
-**MVP Execution Modes Only:**
-| Mode | Supported in MVP |
-|------|-----------------|
-| `serial` | ✅ Yes |
-| `parallel` | ⚠️ Planned |
+**Execution Modes:**
+| Mode | Status |
+|------|--------|
+| `serial` | ✅ Implemented |
+| `parallel` | ✅ Implemented |
 | `interleaved` | ❌ Deferred (yield protocol undefined) |
 
-**MVP Combo Types Only:**
-| Type | Supported in MVP |
-|------|-----------------|
-| `chain` | ✅ Yes |
-| `parallel` | ⚠️ Planned |
-| `wrap` | ❌ Deferred |
-| `conditional` | ❌ Deferred |
+**Combo Types:**
+| Type | Status |
+|------|--------|
+| `chain` | ✅ Implemented |
+| `parallel` | ✅ Implemented |
+| `wrap` | ✅ Implemented |
+| `conditional` | ✅ Implemented |
 
 ## 11. File Structure
 

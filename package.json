@@ -25,5 +25,8 @@
     "jest": "^30.3.0",
     "ts-jest": "^29.4.9",
     "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "yaml": "^2.8.3"
   }
 }

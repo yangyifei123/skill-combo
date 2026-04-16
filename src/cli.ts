@@ -2,6 +2,7 @@
 // MVP: scan, list, and run commands
 
 import { Engine } from './engine';
+import { loadDefaultCombos } from './combo-loader';
 import { Planner } from './planner';
 import { Registry } from './registry';
 import { scanSkills } from './scanner';
@@ -20,6 +21,16 @@ export class CLI {
     this.registry = new Registry();
     this.planner = new Planner();
     this.engine = new Engine();
+
+    // Auto-load default combos
+    try {
+      const defaultCombos = loadDefaultCombos();
+      for (const combo of defaultCombos) {
+        this.registry.addCombo(combo);
+      }
+    } catch (e) {
+      // Silently ignore if combo loading fails (e.g., not in Node.js context)
+    }
   }
 
   /**
