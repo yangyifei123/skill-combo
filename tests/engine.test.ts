@@ -747,6 +747,205 @@ describe('Engine - evaluateCondition', () => {
   });
 });
 
+describe('Engine - Step Level Tracking', () => {
+  let engine: Engine;
+
+  beforeEach(() => {
+    engine = new Engine();
+  });
+
+  describe('executeSerial step tracking', () => {
+    it('should track step-level timing with start_time, end_time, and duration_ms', async () => {
+      const invoker = new TestInvoker();
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: true,
+        result: { data: 'from-a' },
+        tokens_used: 100,
+        duration_ms: 50,
+      });
+      invoker.setNextOutput({
+        skill_id: 'skill-b',
+        success: true,
+        result: { data: 'from-b' },
+        tokens_used: 100,
+        duration_ms: 50,
+      });
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+        { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
+      ];
+
+      const result = await engine.executeSerial(steps, invoker);
+
+      expect(result.success).toBe(true);
+      expect(result.steps).toBeDefined();
+      expect(result.steps).toHaveLength(2);
+
+      // Verify first step timing
+      const stepA = result.steps![0];
+      expect(stepA.step_id).toBe('skill-a');
+      expect(stepA.skill_id).toBe('skill-a');
+      expect(stepA.success).toBe(true);
+      expect(stepA.timing.start_time).toBeGreaterThan(0);
+      expect(stepA.timing.end_time).toBeGreaterThanOrEqual(stepA.timing.start_time);
+      expect(stepA.timing.duration_ms).toBeGreaterThanOrEqual(0);
+      expect(typeof stepA.timing.start_time).toBe('number');
+      expect(typeof stepA.timing.end_time).toBe('number');
+      expect(typeof stepA.timing.duration_ms).toBe('number');
+
+      // Verify second step timing
+      const stepB = result.steps![1];
+      expect(stepB.step_id).toBe('skill-b');
+      expect(stepB.skill_id).toBe('skill-b');
+      expect(stepB.success).toBe(true);
+      expect(stepB.timing.start_time).toBeGreaterThanOrEqual(stepA.timing.start_time);
+      expect(stepB.timing.end_time).toBeGreaterThanOrEqual(stepB.timing.start_time);
+    });
+
+    it('should record step output and tokens_used', async () => {
+      const invoker = new TestInvoker();
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: true,
+        result: { computed: 42 },
+        tokens_used: 150,
+        duration_ms: 75,
+      });
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeSerial(steps, invoker);
+
+      expect(result.steps).toHaveLength(1);
+      const step = result.steps![0];
+      expect(step.tokens_used).toBe(150);
+      expect(step.output).toEqual({ computed: 42 });
+    });
+
+    it('should record step error on failure', async () => {
+      const invoker = new TestInvoker();
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: false,
+        result: null,
+        error: 'Skill A failed catastrophically',
+        tokens_used: 0,
+        duration_ms: 0,
+      });
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeSerial(steps, invoker);
+
+      expect(result.success).toBe(false);
+      expect(result.steps).toHaveLength(1);
+      const step = result.steps![0];
+      expect(step.success).toBe(false);
+      expect(step.error).toBe('Skill A failed catastrophically');
+    });
+
+    it('should track timing even when step fails', async () => {
+      const invoker = new FailingOnSecondInvoker();
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+        { step: 1, skill_id: 'skill-b', depends_on: [0], inputs: {} },
+      ];
+
+      const result = await engine.executeSerial(steps, invoker);
+
+      expect(result.success).toBe(false);
+      expect(result.steps).toBeDefined();
+      expect(result.steps).toHaveLength(2);
+
+      // First step should succeed with timing
+      expect(result.steps![0].success).toBe(true);
+      expect(result.steps![0].timing.start_time).toBeGreaterThan(0);
+      expect(result.steps![0].timing.end_time).toBeGreaterThan(0);
+
+      // Second step should fail but still have timing recorded
+      expect(result.steps![1].success).toBe(false);
+      expect(result.steps![1].timing.start_time).toBeGreaterThan(0);
+      expect(result.steps![1].timing.end_time).toBeGreaterThan(0);
+    });
+
+    it('should have duration_ms equal to end_time - start_time', async () => {
+      const invoker = new TestInvoker();
+      invoker.setNextOutput({
+        skill_id: 'skill-a',
+        success: true,
+        result: {},
+        tokens_used: 100,
+        duration_ms: 50,
+      });
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeSerial(steps, invoker);
+
+      const step = result.steps![0];
+      const calculatedDuration = step.timing.end_time - step.timing.start_time;
+      expect(step.timing.duration_ms).toBe(calculatedDuration);
+    });
+
+    it('should track empty steps array', async () => {
+      const invoker = new TestInvoker();
+      const result = await engine.executeSerial([], invoker);
+
+      expect(result.success).toBe(true);
+      expect(result.steps).toEqual([]);
+    });
+  });
+});
+
+/**
+ * Test invoker that fails on the second invocation
+ */
+class FailingOnSecondInvoker implements SkillInvoker {
+  private callCount = 0;
+  public executionOrder: string[] = [];
+
+  async invoke(skillId: string, _context: SkillContext): Promise<SkillOutput> {
+    this.executionOrder.push(skillId);
+    this.callCount++;
+
+    if (this.callCount === 1) {
+      return {
+        skill_id: skillId,
+        success: true,
+        result: { data: 'success' },
+        tokens_used: 50,
+        duration_ms: 30,
+      };
+    } else {
+      return {
+        skill_id: skillId,
+        success: false,
+        result: null,
+        error: 'Second skill failed',
+        tokens_used: 0,
+        duration_ms: 0,
+      };
+    }
+  }
+
+  async isAvailable(_skillId: string): Promise<boolean> {
+    return true;
+  }
+
+  wasCalled(skillId: string): boolean {
+    return this.executionOrder.includes(skillId);
+  }
+}
+
 /**
  * Test invoker for parallel execution tests
  */

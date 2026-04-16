@@ -132,6 +132,31 @@ export interface SkillOutput {
 }
 
 /**
+ * Step-level execution timing information
+ */
+export interface StepTiming {
+  /** Unix timestamp ms when step started */
+  start_time: number;
+  /** Unix timestamp ms when step ended */
+  end_time: number;
+  /** Calculated duration in ms (end_time - start_time) */
+  duration_ms: number;
+}
+
+/**
+ * Individual step result with timing and output details
+ */
+export interface StepResult {
+  step_id: string;
+  skill_id: string;
+  success: boolean;
+  timing: StepTiming;
+  tokens_used?: number;
+  output?: unknown;
+  error?: string;
+}
+
+/**
  * Skill invocation interface - HOW skills are actually executed
  * This is the contract that OpenCode integration must implement
  */
@@ -163,6 +188,8 @@ export interface ComboResult {
   tokens_used: number;
   duration_ms: number;
   aggregation: ResultAggregation;
+  /** Optional step-level details for debugging and analysis */
+  steps?: StepResult[];
 }
 
 /**

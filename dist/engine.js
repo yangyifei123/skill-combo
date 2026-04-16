@@ -72,6 +72,7 @@ class Engine {
         const errors = [];
         let totalTokens = 0;
         let totalDuration = 0;
+        const stepResults = [];
         // Check max steps limit
         if (steps.length > this.config.maxSteps) {
             return {
@@ -81,6 +82,7 @@ class Engine {
                 tokens_used: 0,
                 duration_ms: 0,
                 aggregation: 'merge',
+                steps: [],
             };
         }
         // Sort steps by execution order (they should already be ordered)
@@ -97,21 +99,44 @@ class Engine {
                     tokens_used: totalTokens,
                     duration_ms: totalDuration,
                     aggregation: 'merge',
+                    steps: stepResults,
                 };
             }
             // Build context for this step from previous outputs
             const context = this.buildContext(step, outputs);
+            // Record step start time
+            const stepStartTime = Date.now();
+            let stepOutput = undefined;
+            let stepError = undefined;
+            let stepTokensUsed = 0;
             // Execute the skill
             try {
                 const output = await invoker.invoke(step.skill_id, context);
                 totalTokens += output.tokens_used;
                 totalDuration += output.duration_ms;
+                stepTokensUsed = output.tokens_used;
                 if (output.success) {
                     outputs[step.skill_id] = output.result;
+                    stepOutput = output.result;
                 }
                 else {
-                    errors.push(output.error || `Skill failed: ${step.skill_id}`);
+                    stepError = output.error || `Skill failed: ${step.skill_id}`;
+                    errors.push(stepError);
                     // In serial mode, stop on first error
+                    const stepEndTime = Date.now();
+                    stepResults.push({
+                        step_id: step.skill_id,
+                        skill_id: step.skill_id,
+                        success: false,
+                        timing: {
+                            start_time: stepStartTime,
+                            end_time: stepEndTime,
+                            duration_ms: stepEndTime - stepStartTime,
+                        },
+                        tokens_used: stepTokensUsed,
+                        output: undefined,
+                        error: stepError,
+                    });
                     return {
                         success: false,
                         outputs,
@@ -119,12 +144,28 @@ class Engine {
                         tokens_used: totalTokens,
                         duration_ms: totalDuration,
                         aggregation: 'merge',
+                        steps: stepResults,
                     };
                 }
             }
             catch (err) {
                 const errorMsg = err instanceof Error ? err.message : String(err);
-                errors.push(`Execution error for ${step.skill_id}: ${errorMsg}`);
+                stepError = `Execution error for ${step.skill_id}: ${errorMsg}`;
+                errors.push(stepError);
+                const stepEndTime = Date.now();
+                stepResults.push({
+                    step_id: step.skill_id,
+                    skill_id: step.skill_id,
+                    success: false,
+                    timing: {
+                        start_time: stepStartTime,
+                        end_time: stepEndTime,
+                        duration_ms: stepEndTime - stepStartTime,
+                    },
+                    tokens_used: stepTokensUsed,
+                    output: undefined,
+                    error: stepError,
+                });
                 return {
                     success: false,
                     outputs,
@@ -132,8 +173,24 @@ class Engine {
                     tokens_used: totalTokens,
                     duration_ms: totalDuration,
                     aggregation: 'merge',
+                    steps: stepResults,
                 };
             }
+            // Record successful step result
+            const stepEndTime = Date.now();
+            stepResults.push({
+                step_id: step.skill_id,
+                skill_id: step.skill_id,
+                success: true,
+                timing: {
+                    start_time: stepStartTime,
+                    end_time: stepEndTime,
+                    duration_ms: stepEndTime - stepStartTime,
+                },
+                tokens_used: stepTokensUsed,
+                output: stepOutput,
+                error: undefined,
+            });
         }
         return {
             success: true,
@@ -142,6 +199,7 @@ class Engine {
             tokens_used: totalTokens,
             duration_ms: totalDuration,
             aggregation: 'merge',
+            steps: stepResults,
         };
     }
     /**
