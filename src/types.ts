@@ -170,6 +170,7 @@ export interface ComboResult {
 export interface IRegistry {
   addSkill(skill: Skill): void;
   getSkill(id: string): Skill | undefined;
+  getAllSkills(): Skill[];
   querySkills(criteria: SkillQuery): Skill[];
   addCombo(combo: Combo): void;
   getCombo(name: string): Combo | undefined;
@@ -180,6 +181,38 @@ export interface SkillQuery {
   category?: string[];
   capabilities?: string[];
   inputs?: string[];
+  outputs?: string[];
+}
+
+/**
+ * OpenCode Skill Invoker Implementation
+ *
+ * This invoker uses OpenCode's task() function to execute skills.
+ * In the OpenCode runtime, skills are invoked via the skill() tool:
+ *
+ * ```typescript
+ * // Using OpenCode's skill tool
+ * const result = await skill({ name: skillId, user_message: context });
+ * ```
+ *
+ * The skill() tool:
+ * - Takes skill name and context as input
+ * - Returns skill execution result as output
+ * - Shares session context with other skills in same session
+ *
+ * For skill chaining, the invoker should:
+ * 1. Call skill() with skillId and current context
+ * 2. Extract outputs from result
+ * 3. Merge outputs into shared context
+ * 4. Pass context to next skill
+ */
+export interface OpenCodeInvokerConfig {
+  /** OpenCode session ID for context sharing */
+  sessionId: string;
+  /** Timeout per skill in milliseconds */
+  timeout?: number;
+  /** Base URL for OpenCode API (if not using local) */
+  apiUrl?: string;
 }
 
 /**
@@ -202,10 +235,44 @@ export interface IPlanner {
 export interface IEngine {
   /**
    * Execute a combo and return results
+   * Delegates to appropriate execution method based on combo.execution
    */
   execute(combo: Combo, plan: ExecutionPlan, invoker: SkillInvoker): Promise<ComboResult>;
   /**
    * Execute skills serially (chain combo)
+   * Each step waits for previous to complete
    */
   executeSerial(steps: ExecutionStep[], invoker: SkillInvoker): Promise<ComboResult>;
+  /**
+   * Execute skills in parallel (parallel combo)
+   * All steps start simultaneously, results aggregated at end
+   */
+  executeParallel(steps: ExecutionStep[], invoker: SkillInvoker, aggregation: ResultAggregation): Promise<ComboResult>;
+  /**
+   * Execute skills with control alternation (interleaved combo)
+   * Skills yield at yield points, control passes to next skill
+   */
+  executeInterleaved(steps: ExecutionStep[], invoker: SkillInvoker): Promise<ComboResult>;
+  /**
+   * Evaluate a condition and return boolean result
+   * Used for conditional combos
+   */
+  evaluateCondition(condition: Condition, context: SkillContext): Promise<boolean>;
 }
+
+/**
+ * Context key convention for skill data flow
+ * Format: {skillId}.output.{field}
+ *
+ * Example:
+ * - skill A outputs: { code: "...", errors: [] }
+ * - Accessed as: context['skill-a'].output.code
+ *
+ * For chain combos, step N's outputs become part of context
+ * before step N+1 executes
+ */
+export const CONTEXT_KEYS = {
+  outputPrefix: (skillId: string) => `${skillId}.output`,
+  inputPrefix: (skillId: string) => `${skillId}.input`,
+  errorPrefix: (skillId: string) => `${skillId}.error`,
+} as const;
