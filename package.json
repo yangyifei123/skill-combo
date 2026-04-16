@@ -1,0 +1,29 @@
+{
+  "name": "skill-combo",
+  "version": "0.1.0",
+  "description": "Skill orchestration framework for OpenCode - chain skills like fighting game combos",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "scan": "node dist/cli.js scan",
+    "list": "node dist/cli.js list",
+    "combo": "node dist/cli.js combo"
+  },
+  "keywords": [
+    "opencode",
+    "skill",
+    "combo",
+    "orchestration"
+  ],
+  "author": "Sisyphus",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.6.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
+    "typescript": "^6.0.2"
+  }
+}
