@@ -552,3 +552,224 @@ class ContextCapturingInvoker implements SkillInvoker {
     return this.contexts.get(skillId) || {};
   }
 }
+
+describe('Engine - Parallel Execution', () => {
+  let engine: Engine;
+
+  beforeEach(() => {
+    engine = new Engine();
+  });
+
+  describe('executeParallel', () => {
+    it('should execute all skills and return success', async () => {
+      const invoker = new ParallelTestInvoker();
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+        { step: 1, skill_id: 'skill-b', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeParallel(steps, invoker, 'merge');
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should aggregate outputs correctly with different keys', async () => {
+      const invoker = new ParallelTestInvoker();
+      invoker.setOutputs([
+        { skill_id: 'skill-a', success: true, result: { a: 1 }, tokens_used: 10, duration_ms: 10 },
+        { skill_id: 'skill-b', success: true, result: { b: 2 }, tokens_used: 10, duration_ms: 10 },
+      ]);
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+        { step: 1, skill_id: 'skill-b', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeParallel(steps, invoker, 'merge');
+
+      expect(result.success).toBe(true);
+      expect(result.outputs).toEqual({ a: 1, b: 2 });
+    });
+
+    it('should handle parallel execution failures', async () => {
+      const invoker = new ParallelTestInvoker();
+      invoker.setOutputs([
+        { skill_id: 'skill-a', success: true, result: { a: 1 }, tokens_used: 10, duration_ms: 10 },
+        { skill_id: 'skill-b', success: false, error: 'Parallel skill failed', result: null, tokens_used: 0, duration_ms: 0 },
+      ]);
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+        { step: 1, skill_id: 'skill-b', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeParallel(steps, invoker, 'merge');
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toContain('Parallel skill failed');
+    });
+
+    it('should reject when skills unavailable', async () => {
+      const invoker = new UnavailableSkillInvoker();
+      invoker.setUnavailable('skill-a');
+
+      const steps: ExecutionStep[] = [
+        { step: 0, skill_id: 'skill-a', depends_on: [], inputs: {} },
+        { step: 1, skill_id: 'skill-b', depends_on: [], inputs: {} },
+      ];
+
+      const result = await engine.executeParallel(steps, invoker, 'merge');
+
+      expect(result.success).toBe(false);
+      expect(result.errors[0]).toContain('Skills not available');
+    });
+  });
+});
+
+describe('Engine - evaluateCondition', () => {
+  let engine: Engine;
+
+  beforeEach(() => {
+    engine = new Engine();
+  });
+
+  describe('env conditions', () => {
+    it('should check environment variable existence', async () => {
+      process.env.TEST_VAR = 'test-value';
+
+      const result = await engine.evaluateCondition(
+        { type: 'env', expression: 'TEST_VAR' },
+        {}
+      );
+
+      expect(result).toBe(true);
+      delete process.env.TEST_VAR;
+    });
+
+    it('should check environment variable value', async () => {
+      process.env.TEST_VAR = 'specific-value';
+
+      const result = await engine.evaluateCondition(
+        { type: 'env', expression: 'TEST_VAR=specific-value' },
+        {}
+      );
+
+      expect(result).toBe(true);
+      delete process.env.TEST_VAR;
+    });
+
+    it('should return false for non-matching value', async () => {
+      process.env.TEST_VAR = 'actual-value';
+
+      const result = await engine.evaluateCondition(
+        { type: 'env', expression: 'TEST_VAR=wrong-value' },
+        {}
+      );
+
+      expect(result).toBe(false);
+      delete process.env.TEST_VAR;
+    });
+  });
+
+  describe('ctx conditions', () => {
+    it('should check context value existence', async () => {
+      const context = { user: { name: 'test' } };
+
+      const result = await engine.evaluateCondition(
+        { type: 'ctx', expression: 'user.name' },
+        context
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should check context value equality', async () => {
+      const context = { user: { name: 'test' } };
+
+      const result = await engine.evaluateCondition(
+        { type: 'ctx', expression: 'user.name=test' },
+        context
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false for non-existent context path', async () => {
+      const context = { user: { name: 'test' } };
+
+      const result = await engine.evaluateCondition(
+        { type: 'ctx', expression: 'user.missing' },
+        context
+      );
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('skill-output conditions', () => {
+    it('should check skill output field', async () => {
+      const context = {
+        'research.output': { data: 'test-data', count: 42 }
+      };
+
+      const result = await engine.evaluateCondition(
+        { type: 'skill-output', expression: 'research.data' },
+        context
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('should check skill output field with value', async () => {
+      const context = {
+        'research.output': { status: 'success' }
+      };
+
+      const result = await engine.evaluateCondition(
+        { type: 'skill-output', expression: 'research.status=success' },
+        context
+      );
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('js-expression conditions', () => {
+    it('should throw for js-expression type', async () => {
+      await expect(
+        engine.evaluateCondition(
+          { type: 'js-expression', expression: 'true' },
+          {}
+        )
+      ).rejects.toThrow();
+    });
+  });
+});
+
+/**
+ * Test invoker for parallel execution tests
+ */
+class ParallelTestInvoker implements SkillInvoker {
+  public executedInParallel = false;
+  private outputs: SkillOutput[] = [];
+
+  setOutputs(outputs: SkillOutput[]): void {
+    this.outputs = outputs;
+  }
+
+  async invoke(skillId: string, _context: SkillContext): Promise<SkillOutput> {
+    const output = this.outputs.shift() || {
+      skill_id: skillId,
+      success: true,
+      result: {},
+      tokens_used: 10,
+      duration_ms: 10,
+    };
+    return output;
+  }
+
+  async isAvailable(_skillId: string): Promise<boolean> {
+    return true;
+  }
+}

@@ -1,0 +1,27 @@
+# Default Combos
+# Pre-configured skill combinations for common tasks
+
+combos:
+  - name: research-report
+    description: "Market research followed by SEO content writing"
+    type: chain
+    execution: serial
+    skills:
+      - market-research-1.0.0
+      - seo-content-writer
+
+  - name: code-review-full
+    description: "Full code review with security and performance checks"
+    type: parallel
+    execution: parallel
+    skills:
+      - security-auditor
+      - performance-optimization
+
+  - name: frontend-dev
+    description: "Frontend design to implementation pipeline"
+    type: chain
+    execution: serial
+    skills:
+      - frontend-design
+      - ts-react-nextjs

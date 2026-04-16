@@ -152,17 +152,78 @@ export class Engine implements IEngine {
   /**
    * Execute skills in parallel - all steps start simultaneously
    * Results aggregated at end according to aggregation strategy
-   * DEFERRED to future iteration
    */
   async executeParallel(
-    _steps: ExecutionStep[],
-    _invoker: SkillInvoker,
-    _aggregation: ResultAggregation
+    steps: ExecutionStep[],
+    invoker: SkillInvoker,
+    aggregation: ResultAggregation
   ): Promise<ComboResult> {
-    throw new NotImplementedError(
-      'executeParallel',
-      'Parallel execution requires Promise.all with result aggregation'
+    const errors: string[] = [];
+    let totalTokens = 0;
+    let totalDuration = 0;
+    const outputs: Record<string, any> = {};
+
+    // Check max steps limit
+    if (steps.length > this.config.maxSteps) {
+      return {
+        success: false,
+        outputs,
+        errors: [`Exceeds max steps limit (${steps.length} > ${this.config.maxSteps})`],
+        tokens_used: 0,
+        duration_ms: 0,
+        aggregation,
+      };
+    }
+
+    // Check availability for all skills first
+    const availabilityChecks = await Promise.all(
+      steps.map(step => invoker.isAvailable(step.skill_id))
     );
+
+    const unavailableSkills = steps.filter((_, i) => !availabilityChecks[i]).map(s => s.skill_id);
+    if (unavailableSkills.length > 0) {
+      return {
+        success: false,
+        outputs,
+        errors: [`Skills not available: ${unavailableSkills.join(', ')}`],
+        tokens_used: 0,
+        duration_ms: 0,
+        aggregation,
+      };
+    }
+
+    // Execute all skills in parallel
+    const startTime = Date.now();
+    const results = await Promise.all(
+      steps.map(step => invoker.invoke(step.skill_id, {}))
+    );
+    const endTime = Date.now();
+
+    // Collect results
+    const skillOutputs: SkillOutput[] = [];
+    for (const output of results) {
+      totalTokens += output.tokens_used;
+      if (output.success) {
+        skillOutputs.push(output);
+      } else {
+        errors.push(output.error || `Skill ${output.skill_id} failed`);
+      }
+    }
+
+    // Aggregate outputs
+    const { result: aggregatedResult, errors: aggErrors } = this.aggregateOutputs(skillOutputs, aggregation);
+    errors.push(...aggErrors);
+
+    totalDuration = endTime - startTime;
+
+    return {
+      success: errors.length === 0,
+      outputs: aggregatedResult,
+      errors,
+      tokens_used: totalTokens,
+      duration_ms: totalDuration,
+      aggregation,
+    };
   }
 
   /**
@@ -181,16 +242,65 @@ export class Engine implements IEngine {
 
   /**
    * Evaluate a condition and return boolean result
-   * DEFERRED - requires security model for JS expressions
+   * Supports env (environment variables) and ctx (context) types
+   * Does NOT support js-expression (requires security model)
    */
   async evaluateCondition(
     condition: { type: string; expression: string },
-    _context: SkillContext
+    context: SkillContext
   ): Promise<boolean> {
-    throw new NotImplementedError(
-      'evaluateCondition',
-      `Condition type "${condition.type}" evaluation requires security model`
-    );
+    switch (condition.type) {
+      case 'env': {
+        // Check environment variable: env:VAR_NAME=value
+        const match = condition.expression.match(/^([^=]+)(?:=(.*))?$/);
+        if (!match) return false;
+        const [, varName, expectedValue] = match;
+        const actualValue = process.env[varName];
+        if (expectedValue === undefined) {
+          // Just check if exists
+          return actualValue !== undefined;
+        }
+        return actualValue === expectedValue;
+      }
+
+      case 'ctx': {
+        // Check context value: ctx:key.path=value
+        const ctxMatch = condition.expression.match(/^(.+?)(?:=(.*))?$/);
+        if (!ctxMatch) return false;
+        const [, keyPath, expectedValue] = ctxMatch;
+        const keys = keyPath.split('.');
+        let value: any = context;
+        for (const key of keys) {
+          if (value === undefined || value === null) return false;
+          value = value[key];
+        }
+        if (expectedValue === undefined) {
+          return value !== undefined && value !== null;
+        }
+        return String(value) === expectedValue;
+      }
+
+      case 'skill-output': {
+        // Check if skill output exists and matches: skill-output:skillId.field=value
+        const soMatch = condition.expression.match(/^(.+?)\.(.+?)(?:=(.*))?$/);
+        if (!soMatch) return false;
+        const [, skillId, field, expectedValue] = soMatch;
+        const skillOutput = context[`${skillId}.output`];
+        if (!skillOutput) return false;
+        const fieldValue = skillOutput[field];
+        if (expectedValue === undefined) {
+          return fieldValue !== undefined;
+        }
+        return String(fieldValue) === expectedValue;
+      }
+
+      case 'js-expression':
+      default:
+        throw new NotImplementedError(
+          'evaluateCondition',
+          `Condition type "${condition.type}" requires security model for safe JS evaluation`
+        );
+    }
   }
 
   /**

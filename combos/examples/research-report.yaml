@@ -1,0 +1,16 @@
+# Example Combo: Research Report
+# This combo chains market research → content writing
+
+combo:
+  name: research-report
+  description: "Complete market research and generate SEO-optimized report"
+  type: chain
+  execution: serial
+  skills:
+    - market-research-1.0.0
+    - seo-content-writer
+  schema:
+    input:
+      topic: "The research topic"
+    output:
+      report: "Final markdown report"
