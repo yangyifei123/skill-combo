@@ -115,7 +115,10 @@ export function parseSkillMarkdown(content: string, filePath: string): Skill {
   // Extract compatibility (works well with)
   const compatibility = extractCompatibility(content);
 
-  const id = extractNameFromPath(filePath).toLowerCase().replace(/\s+/g, '-');
+  const id = extractNameFromPath(filePath)
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/\./g, '-'); // Normalize dots to hyphens for valid IDs
 
   return {
     id,

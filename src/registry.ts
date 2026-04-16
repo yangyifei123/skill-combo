@@ -9,7 +9,15 @@ import {
   Combo,
   IRegistry,
   SkillQuery,
+  ValidationError,
 } from './types';
+
+/**
+ * Registry validation constants
+ */
+const VALID_ID_PATTERN = /^[a-z0-9-]+$/;
+const MAX_ID_LENGTH = 100;
+const MAX_NAME_LENGTH = 200;
 
 export class Registry implements IRegistry {
   private skills: Map<string, Skill>;
@@ -23,9 +31,63 @@ export class Registry implements IRegistry {
   }
 
   /**
-   * Add a skill to the registry
+   * Validate a skill before adding to registry
+   * Throws ValidationError if invalid
+   */
+  private validateSkill(skill: Skill): ValidationError[] {
+    const errors: ValidationError[] = [];
+
+    // Validate ID format
+    if (!skill.id) {
+      errors.push({ field: 'id', message: 'Skill ID is required' });
+    } else if (!VALID_ID_PATTERN.test(skill.id)) {
+      errors.push({
+        field: 'id',
+        message: `Invalid skill ID "${skill.id}". Use lowercase letters, numbers, and hyphens only.`,
+      });
+    } else if (skill.id.length > MAX_ID_LENGTH) {
+      errors.push({
+        field: 'id',
+        message: `Skill ID too long (${skill.id.length} > ${MAX_ID_LENGTH})`,
+      });
+    }
+
+    // Validate name
+    if (!skill.name) {
+      errors.push({ field: 'name', message: 'Skill name is required' });
+    } else if (skill.name.length > MAX_NAME_LENGTH) {
+      errors.push({
+        field: 'name',
+        message: `Skill name too long (${skill.name.length} > ${MAX_NAME_LENGTH})`,
+      });
+    }
+
+    // Validate load_skills references
+    if (skill.load_skills) {
+      for (const depId of skill.load_skills) {
+        if (!VALID_ID_PATTERN.test(depId)) {
+          errors.push({
+            field: 'load_skills',
+            message: `Invalid dependency ID "${depId}" in load_skills`,
+          });
+        }
+      }
+    }
+
+    return errors;
+  }
+
+  /**
+   * Add a skill to the registry with validation
+   * @throws ValidationError[] if skill is invalid
    */
   addSkill(skill: Skill): void {
+    const errors = this.validateSkill(skill);
+    if (errors.length > 0) {
+      throw new Error(
+        `Invalid skill "${skill.id || 'unknown'}": ${errors.map(e => e.message).join('; ')}`
+      );
+    }
     this.skills.set(skill.id, skill);
   }
 

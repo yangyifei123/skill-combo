@@ -123,4 +123,160 @@ This is a detailed description of the skill.
       expect(capabilities.some((c: string) => c.includes('data analysis'))).toBeTruthy();
     });
   });
+
+  describe('EDGE CASES - Malformed SKILL.md', () => {
+    it('should handle empty content', () => {
+      const content = '';
+      const skill = parseSkillMarkdown(content, '/fake/path/test/SKILL.md');
+
+      expect(skill.name).toBe('test');
+      expect(skill.id).toBe('test');
+      expect(skill.description).toBe('');
+    });
+
+    it('should handle only whitespace content', () => {
+      const content = '   \n\n  \n   ';
+      const skill = parseSkillMarkdown(content, '/fake/path/test/SKILL.md');
+
+      expect(skill.name).toBe('test');
+      expect(skill.id).toBe('test');
+    });
+
+    it('should handle description that is only newlines', () => {
+      const content = `# Test Skill\n\n\n\n\n## Other`;
+      const skill = parseSkillMarkdown(content, '/fake/path/test/SKILL.md');
+
+      expect(skill.description).toBe('');
+    });
+
+    it('should truncate long descriptions to 200 chars', () => {
+      const longDesc = 'A'.repeat(300);
+      const content = `# Test Skill\n\n${longDesc}`;
+      const skill = parseSkillMarkdown(content, '/fake/path/test/SKILL.md');
+
+      expect(skill.description.length).toBe(200);
+    });
+
+    it('should handle very long category lists (cap at 10)', () => {
+      const content = `category: cat1, cat2, cat3, cat4, cat5, cat6, cat7, cat8, cat9, cat10, cat11, cat12`;
+      const categories = extractCategories(content);
+
+      expect(categories.length).toBeLessThanOrEqual(10);
+    });
+
+    it('should handle very long capability lists (cap at 20)', () => {
+      const content = `capabilities: cap1, cap2, cap3, cap4, cap5, cap6, cap7, cap8, cap9, cap10, cap11, cap12, cap13, cap14, cap15, cap16, cap17, cap18, cap19, cap20, cap21, cap22`;
+      const capabilities = extractCapabilities(content);
+
+      expect(capabilities.length).toBeLessThanOrEqual(20);
+    });
+
+    it('should handle multiple headings without breaking', () => {
+      const content = `# First Skill\n\nDesc 1\n\n# Second Skill\n\nDesc 2\n\n## Usage\n\nDetails`;
+      const skill = parseSkillMarkdown(content, '/fake/path/test/SKILL.md');
+
+      expect(skill.name).toBe('First Skill');
+      expect(skill.description).toBe('Desc 1');
+    });
+
+    it('should handle skill names with special characters', () => {
+      const content = `# API REST Design\n\nA skill for REST APIs.`;
+      const skill = parseSkillMarkdown(content, '/fake/path/api-rest-design/SKILL.md');
+
+      expect(skill.name).toBe('API REST Design');
+    });
+
+    it('should extract categories from code block format', () => {
+      const content = `
+\`\`\`skill
+category: testing, unit
+\`\`\`
+      `;
+      const categories = extractCategories(content);
+
+      expect(categories).toContain('testing');
+      expect(categories).toContain('unit');
+    });
+
+    it('should extract capabilities with semicolon separator', () => {
+      const content = `capabilities: does X; does Y; does Z`;
+      const capabilities = extractCapabilities(content);
+
+      expect(capabilities.length).toBe(3);
+    });
+
+    it('should extract inputs with various formats', () => {
+      const { extractInputs } = require('../src/scanner');
+      const content = `inputs: param1, param2; param3`;
+      const inputs = extractInputs(content);
+
+      expect(inputs.length).toBe(3);
+    });
+
+    it('should extract outputs with various formats', () => {
+      const { extractOutputs } = require('../src/scanner');
+      const content = `outputs: result1; result2, result3`;
+      const outputs = extractOutputs(content);
+
+      expect(outputs.length).toBe(3);
+    });
+
+    it('should extract compatibility patterns', () => {
+      const { extractCompatibility } = require('../src/scanner');
+      const content = `works well with: skill-a, skill-b`;
+      const compat = extractCompatibility(content);
+
+      expect(compat).toContain('skill-a');
+      expect(compat).toContain('skill-b');
+    });
+
+    it('should extract compatibility - alternative pattern', () => {
+      const { extractCompatibility } = require('../src/scanner');
+      const content = `compatible with: other-skill`;
+      const compat = extractCompatibility(content);
+
+      expect(compat).toContain('other-skill');
+    });
+
+    it('should handle skill references with escaped quotes', () => {
+      const content = `skill(name=\\"escaped-skill\\")`;
+      const { extractLoadSkills } = require('../src/scanner');
+      const skills = extractLoadSkills(content);
+
+      // Should not match (escaped quotes are not standard)
+      expect(skills).toEqual([]);
+    });
+
+    it('should handle Windows path separators in extractNameFromPath', () => {
+      const content = `# Test`;
+      const skill = parseSkillMarkdown(content, 'E:\\AI_field\\skills\\my-skill\\SKILL.md');
+
+      expect(skill.id).toBe('my-skill');
+    });
+
+    it('should handle path with no SKILL.md (fallback behavior)', () => {
+      const content = `# Test Skill`;
+      const skill = parseSkillMarkdown(content, '/no/skill.md/here');
+
+      // Falls back to second-to-last path part
+      expect(skill.name).toBeTruthy();
+    });
+
+    it('should handle extractCategories with mixed case keywords', () => {
+      const content = `Category: WEB, Frontend\nTAGS: testing, API`;
+      const categories = extractCategories(content);
+
+      expect(categories).toContain('WEB');
+      expect(categories).toContain('Frontend');
+      expect(categories).toContain('testing');
+      expect(categories).toContain('API');
+    });
+
+    it('should handle capability extraction with "does" pattern', () => {
+      const content = `does: data processing, file conversion`;
+      const capabilities = extractCapabilities(content);
+
+      expect(capabilities.some((c: string) => c.includes('data processing'))).toBeTruthy();
+    });
+  });
 });

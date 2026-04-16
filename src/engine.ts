@@ -4,9 +4,11 @@
 import {
   Combo,
   ComboResult,
+  EngineConfig,
   ExecutionPlan,
   ExecutionStep,
   IEngine,
+  NotImplementedError,
   ResultAggregation,
   SkillContext,
   SkillInvoker,
@@ -18,8 +20,21 @@ import {
  * MVP supports serial execution only
  */
 export class Engine implements IEngine {
-  constructor() {
-    // No dependencies for MVP - engine is stateless for serial execution
+  private config: Required<EngineConfig>;
+
+  constructor(config: EngineConfig = {}) {
+    this.config = {
+      maxContextSize: config.maxContextSize ?? 1024 * 1024, // 1MB default
+      maxSteps: config.maxSteps ?? 100,
+      skillTimeout: config.skillTimeout ?? 300000, // 5 min default
+    };
+    // Validate config early
+    if (config.maxContextSize !== undefined && config.maxContextSize <= 0) {
+      throw new Error('maxContextSize must be positive');
+    }
+    if (config.maxSteps !== undefined && config.maxSteps <= 0) {
+      throw new Error('maxSteps must be positive');
+    }
   }
 
   /**
@@ -56,6 +71,18 @@ export class Engine implements IEngine {
     const errors: string[] = [];
     let totalTokens = 0;
     let totalDuration = 0;
+
+    // Check max steps limit
+    if (steps.length > this.config.maxSteps) {
+      return {
+        success: false,
+        outputs,
+        errors: [`Exceeds max steps limit (${steps.length} > ${this.config.maxSteps})`],
+        tokens_used: 0,
+        duration_ms: 0,
+        aggregation: 'merge',
+      };
+    }
 
     // Sort steps by execution order (they should already be ordered)
     const sortedSteps = [...steps].sort((a, b) => a.step - b.step);
@@ -125,23 +152,17 @@ export class Engine implements IEngine {
   /**
    * Execute skills in parallel - all steps start simultaneously
    * Results aggregated at end according to aggregation strategy
-   * DEFERRED to future iteration - stub implementation
+   * DEFERRED to future iteration
    */
   async executeParallel(
     _steps: ExecutionStep[],
     _invoker: SkillInvoker,
-    aggregation: ResultAggregation
+    _aggregation: ResultAggregation
   ): Promise<ComboResult> {
-    // TODO: Implement parallel execution
-    // For now, return a stub result
-    return {
-      success: false,
-      outputs: {},
-      errors: ['Parallel execution not yet implemented'],
-      tokens_used: 0,
-      duration_ms: 0,
-      aggregation,
-    };
+    throw new NotImplementedError(
+      'executeParallel',
+      'Parallel execution requires Promise.all with result aggregation'
+    );
   }
 
   /**
@@ -152,16 +173,10 @@ export class Engine implements IEngine {
     _steps: ExecutionStep[],
     _invoker: SkillInvoker
   ): Promise<ComboResult> {
-    // TODO: Implement interleaved execution
-    // Requires yield protocol for control flow alternation
-    return {
-      success: false,
-      outputs: {},
-      errors: ['Interleaved execution not yet implemented'],
-      tokens_used: 0,
-      duration_ms: 0,
-      aggregation: 'merge',
-    };
+    throw new NotImplementedError(
+      'executeInterleaved',
+      'Interleaved execution requires yield protocol for control flow alternation'
+    );
   }
 
   /**
@@ -169,12 +184,13 @@ export class Engine implements IEngine {
    * DEFERRED - requires security model for JS expressions
    */
   async evaluateCondition(
-    _condition: { type: string; expression: string },
+    condition: { type: string; expression: string },
     _context: SkillContext
   ): Promise<boolean> {
-    // TODO: Implement condition evaluation
-    // Requires security model for JS expression evaluation
-    return false;
+    throw new NotImplementedError(
+      'evaluateCondition',
+      `Condition type "${condition.type}" evaluation requires security model`
+    );
   }
 
   /**

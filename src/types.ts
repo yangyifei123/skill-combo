@@ -277,3 +277,33 @@ export const CONTEXT_KEYS = {
   inputPrefix: (skillId: string) => `${skillId}.input`,
   errorPrefix: (skillId: string) => `${skillId}.error`,
 } as const;
+
+/**
+ * Validation error for skill/combo registration
+ */
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
+/**
+ * Engine configuration options
+ */
+export interface EngineConfig {
+  /** Maximum context size in bytes (default: 1MB) */
+  maxContextSize?: number;
+  /** Maximum execution steps per combo (default: 100) */
+  maxSteps?: number;
+  /** Default timeout per skill in ms (default: 5 minutes) */
+  skillTimeout?: number;
+}
+
+/**
+ * NotImplementedError - thrown when a deferred feature is called
+ */
+export class NotImplementedError extends Error {
+  constructor(feature: string, reason: string) {
+    super(`[DEFERRED] ${feature}: ${reason}`);
+    this.name = 'NotImplementedError';
+  }
+}
