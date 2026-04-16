@@ -1,5 +1,9 @@
 // Skill-Combo Core Types
 
+/**
+ * Skill represents a discovered skill with its metadata
+ * In OpenCode, skills are defined in SKILL.md files
+ */
 export interface Skill {
   id: string;
   name: string;
@@ -7,15 +11,13 @@ export interface Skill {
   location: string;
   category: string[];
   capabilities: string[];
-  /** Skills that MUST be loaded before this skill can run */
-  dependencies: string[];
-  /** Skills that this skill INVOKES/CALLS during execution */
+  /** OpenCode skill load dependencies - skills this skill requires */
   load_skills: string[];
   /** Expected inputs this skill consumes */
   inputs: string[];
   /** Outputs this skill produces */
   outputs: string[];
-  /** Skills that work well with this one */
+  /** Skills that work well with this one (for combo planning) */
   compatibility: string[];
   category_priority: number;
 }
@@ -32,18 +34,35 @@ export type ComboType = 'chain' | 'parallel' | 'wrap' | 'conditional';
  */
 export type ExecutionMode = 'serial' | 'parallel' | 'interleaved';
 
+/**
+ * Condition evaluation type for conditional combos
+ */
+export type ConditionType = 'env' | 'ctx' | 'skill-output' | 'js-expression';
+
+/**
+ * Condition for conditional combos
+ */
+export interface Condition {
+  type: ConditionType;
+  expression: string;
+}
+
+/**
+ * Combo definition - how to compose skills together
+ */
 export interface Combo {
   name: string;
   description: string;
   type: ComboType;
   execution: ExecutionMode;
+  /** Ordered list of skill IDs for chain/parallel combos */
   skills: string[];
-  /** For conditional combos: variable to evaluate */
-  condition?: string;
+  /** For conditional combos: condition to evaluate */
+  condition?: Condition;
   /** For conditional combos: mapping of condition values to skill sequences */
   branches?: Record<string, string[]>;
-  /** For wrap combos: skill that wraps the sub-combo */
-  wrapper?: string;
+  /** For wrap combos: the wrapped sub-combo (skills executed inside wrapper) */
+  sub_combo?: string[];
   /** Input/output schema for validation */
   schema?: ComboSchema;
 }
@@ -56,6 +75,9 @@ export interface ComboSchema {
 /** Result aggregation strategy for parallel execution */
 export type ResultAggregation = 'merge' | 'override' | 'fail-on-conflict' | 'first-win';
 
+/**
+ * Execution plan output by planner, input to engine
+ */
 export interface ExecutionPlan {
   combo: Combo;
   steps: ExecutionStep[];
@@ -80,10 +102,57 @@ export interface ScanError {
   error: string;
 }
 
+/**
+ * Registry interface - skills and combos storage
+ */
 export interface Registry {
   skills: Map<string, Skill>;
   combos: Map<string, Combo>;
   last_scan: number;
+}
+
+/**
+ * Skill execution context - shared state between skills in a combo
+ */
+export interface SkillContext {
+  [key: string]: any;
+}
+
+/**
+ * Individual skill output
+ */
+export interface SkillOutput {
+  skill_id: string;
+  success: boolean;
+  result: any;
+  error?: string;
+  tokens_used: number;
+  duration_ms: number;
+}
+
+/**
+ * Skill invocation interface - HOW skills are actually executed
+ * This is the contract that OpenCode integration must implement
+ */
+export interface SkillInvoker {
+  /**
+   * Invoke a skill by ID with given context
+   */
+  invoke(skillId: string, context: SkillContext): Promise<SkillOutput>;
+  /**
+   * Check if a skill is available
+   */
+  isAvailable(skillId: string): Promise<boolean>;
+}
+
+/**
+ * Default invoker using OpenCode's task() function
+ */
+export interface OpenCodeInvokerOptions {
+  /** OpenCode session ID for context */
+  sessionId?: string;
+  /** Timeout for skill execution */
+  timeout?: number;
 }
 
 export interface ComboResult {
@@ -93,4 +162,50 @@ export interface ComboResult {
   tokens_used: number;
   duration_ms: number;
   aggregation: ResultAggregation;
+}
+
+/**
+ * Registry API - what registry.ts must implement
+ */
+export interface IRegistry {
+  addSkill(skill: Skill): void;
+  getSkill(id: string): Skill | undefined;
+  querySkills(criteria: SkillQuery): Skill[];
+  addCombo(combo: Combo): void;
+  getCombo(name: string): Combo | undefined;
+  listCombos(): Combo[];
+}
+
+export interface SkillQuery {
+  category?: string[];
+  capabilities?: string[];
+  inputs?: string[];
+}
+
+/**
+ * Combo planner interface - what planner.ts must implement
+ */
+export interface IPlanner {
+  /**
+   * Create an execution plan from a combo
+   */
+  plan(combo: Combo, skills: Skill[]): ExecutionPlan;
+  /**
+   * Suggest best combo for a task description
+   */
+  suggest(taskDescription: string, skills: Skill[]): Combo[];
+}
+
+/**
+ * Combo engine interface - what engine.ts must implement
+ */
+export interface IEngine {
+  /**
+   * Execute a combo and return results
+   */
+  execute(combo: Combo, plan: ExecutionPlan, invoker: SkillInvoker): Promise<ComboResult>;
+  /**
+   * Execute skills serially (chain combo)
+   */
+  executeSerial(steps: ExecutionStep[], invoker: SkillInvoker): Promise<ComboResult>;
 }

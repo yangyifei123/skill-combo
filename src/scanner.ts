@@ -124,7 +124,6 @@ export function parseSkillMarkdown(content: string, filePath: string): Skill {
     location: filePath,
     category,
     capabilities,
-    dependencies: [],
     inputs,
     outputs,
     compatibility,
