@@ -103,9 +103,10 @@ export interface ScanError {
 }
 
 /**
- * Registry interface - skills and combos storage
+ * Registry snapshot - data structure for serialization
+ * Note: This is the data shape, not the implementation contract
  */
-export interface Registry {
+export interface RegistrySnapshot {
   skills: Map<string, Skill>;
   combos: Map<string, Combo>;
   last_scan: number;
