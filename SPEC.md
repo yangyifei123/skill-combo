@@ -353,19 +353,35 @@ Skill-Combo integrates with OpenCode via:
 
 For iteration 1, we implement:
 
+**Core (MVP - Must Have):**
 1. ✅ Skill Scanner - discover and index skills
 2. ✅ Skill Registry - store and query skill metadata
-3. ✅ Basic Combo Engine - serial execution
+3. ✅ Combo Engine - serial execution only
 4. ✅ CLI commands - scan, list, run
 5. ✅ Plugin structure - installable SKILL.md
 
-**Deferred to later iterations**:
-- Parallel execution
-- Interleaved execution
-- Conditional combos
-- Natural language integration
+**Extended (Later Iterations):**
+- Parallel execution (executeParallel)
+- Interleaved execution (executeInterleaved) - requires yield protocol definition
+- Conditional combos (evaluateCondition) - requires security model
+- Natural language integration (suggest)
 - Token optimization
-- Error recovery
+- Error recovery strategies
+
+**MVP Execution Modes Only:**
+| Mode | Supported in MVP |
+|------|-----------------|
+| `serial` | ✅ Yes |
+| `parallel` | ⚠️ Planned |
+| `interleaved` | ❌ Deferred (yield protocol undefined) |
+
+**MVP Combo Types Only:**
+| Type | Supported in MVP |
+|------|-----------------|
+| `chain` | ✅ Yes |
+| `parallel` | ⚠️ Planned |
+| `wrap` | ❌ Deferred |
+| `conditional` | ❌ Deferred |
 
 ## 11. File Structure
 
