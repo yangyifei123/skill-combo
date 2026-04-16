@@ -357,19 +357,21 @@ export class Engine implements IEngine {
 
   /**
    * Execute a conditional combo - select branch based on condition evaluation
-   * Branch is selected based on condition result (true/false)
-   * Supports: env, ctx, skill-output conditions
-   */
+    * Branch is selected based on condition result (true/false)
+    * Supports: env, ctx, skill-output conditions
+    * Note: skill-output conditions require context from previous steps
+    */
   async executeConditional(
     condition: { type: string; expression: string },
     trueBranch: ExecutionStep[],
     falseBranch: ExecutionStep[],
-    invoker: SkillInvoker
+    invoker: SkillInvoker,
+    initialContext: SkillContext = {}
   ): Promise<ComboResult> {
     const startTime = Date.now();
 
-    // Evaluate condition
-    const conditionResult = await this.evaluateCondition(condition, {});
+    // Evaluate condition with initial context
+    const conditionResult = await this.evaluateCondition(condition, initialContext);
 
     // Select branch
     const selectedBranch = conditionResult ? trueBranch : falseBranch;
