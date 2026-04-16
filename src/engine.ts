@@ -227,6 +227,89 @@ export class Engine implements IEngine {
   }
 
   /**
+   * Execute a wrap combo: wrapper → [sub-steps] → wrapper
+   * The wrapper skill runs at start (setup), then sub-steps run, then wrapper runs at end (teardown)
+   */
+  async executeWrap(
+    wrapperSkillId: string,
+    subSteps: ExecutionStep[],
+    invoker: SkillInvoker
+  ): Promise<ComboResult> {
+    const outputs: Record<string, any> = {};
+    const errors: string[] = [];
+    let totalTokens = 0;
+    let totalDuration = 0;
+    const startTime = Date.now();
+
+    // Phase 1: Execute wrapper (setup)
+    const wrapperAvailable = await invoker.isAvailable(wrapperSkillId);
+    if (!wrapperAvailable) {
+      return {
+        success: false,
+        outputs,
+        errors: [`Wrapper skill not available: ${wrapperSkillId}`],
+        tokens_used: 0,
+        duration_ms: 0,
+        aggregation: 'merge',
+      };
+    }
+
+    let wrapperResult = await invoker.invoke(wrapperSkillId, { phase: 'setup', ...outputs });
+    totalTokens += wrapperResult.tokens_used;
+    totalDuration += wrapperResult.duration_ms;
+
+    if (!wrapperResult.success) {
+      errors.push(wrapperResult.error || 'Wrapper setup failed');
+      return {
+        success: false,
+        outputs,
+        errors,
+        tokens_used: totalTokens,
+        duration_ms: totalDuration,
+        aggregation: 'merge',
+      };
+    }
+
+    outputs[wrapperSkillId] = wrapperResult.result;
+
+    // Phase 2: Execute sub-steps serially
+    if (subSteps.length > 0) {
+      const subResult = await this.executeSerial(subSteps, invoker);
+      totalTokens += subResult.tokens_used;
+      totalDuration += subResult.duration_ms;
+
+      if (!subResult.success) {
+        errors.push(...subResult.errors);
+      }
+
+      // Merge sub-step outputs
+      Object.assign(outputs, subResult.outputs);
+    }
+
+    // Phase 3: Execute wrapper again (teardown)
+    wrapperResult = await invoker.invoke(wrapperSkillId, { phase: 'teardown', ...outputs });
+    totalTokens += wrapperResult.tokens_used;
+    totalDuration += wrapperResult.duration_ms;
+
+    if (!wrapperResult.success) {
+      errors.push(wrapperResult.error || 'Wrapper teardown failed');
+    }
+
+    outputs[wrapperSkillId] = wrapperResult.result;
+
+    const totalTime = Date.now() - startTime;
+
+    return {
+      success: errors.length === 0,
+      outputs,
+      errors,
+      tokens_used: totalTokens,
+      duration_ms: totalTime,
+      aggregation: 'merge',
+    };
+  }
+
+  /**
    * Execute skills with control alternation at yield points
    * DEFERRED - requires yield protocol definition
    */
@@ -238,6 +321,43 @@ export class Engine implements IEngine {
       'executeInterleaved',
       'Interleaved execution requires yield protocol for control flow alternation'
     );
+  }
+
+  /**
+   * Execute a conditional combo - select branch based on condition evaluation
+   * Branch is selected based on condition result (true/false)
+   * Supports: env, ctx, skill-output conditions
+   */
+  async executeConditional(
+    condition: { type: string; expression: string },
+    trueBranch: ExecutionStep[],
+    falseBranch: ExecutionStep[],
+    invoker: SkillInvoker
+  ): Promise<ComboResult> {
+    const startTime = Date.now();
+
+    // Evaluate condition
+    const conditionResult = await this.evaluateCondition(condition, {});
+
+    // Select branch
+    const selectedBranch = conditionResult ? trueBranch : falseBranch;
+
+    if (selectedBranch.length === 0) {
+      return {
+        success: true,
+        outputs: {},
+        errors: [],
+        tokens_used: 0,
+        duration_ms: Date.now() - startTime,
+        aggregation: 'merge',
+      };
+    }
+
+    // Execute selected branch serially
+    const result = await this.executeSerial(selectedBranch, invoker);
+    result.duration_ms = Date.now() - startTime;
+
+    return result;
   }
 
   /**
