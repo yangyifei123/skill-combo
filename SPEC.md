@@ -1,5 +1,10 @@
 # Skill-Combo System Specification
 
+**Version**: 1.1 (Revised based on Oracle/Momus review)
+**Changelog**:
+- v1.1: Clarified Combo Type vs Execution Mode distinction, added ResultAggregation, defined Wrap/Conditional combo semantics, added OpenCode integration hooks, measurable success criteria
+- v1.0: Initial draft
+
 ## 1. Concept & Vision
 
 **Skill-Combo** is a **skill orchestration framework** for OpenCode that enables multiple skills to work together dynamically, like a fighting game's combo system. Instead of skills being isolated, Skill-Combo allows them to chain, parallelize, and compose into powerful "combo attacks" that reduce token usage and improve task completion speed.
@@ -28,6 +33,76 @@
 │  │ - Strategy   │  │ - Optimization│  │  - Result aggreg.   │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
+```
+
+## 3. Component Data Flow
+
+Components communicate via typed interfaces:
+
+```
+┌──────────────┐     ScanResult      ┌──────────────┐
+│ Skill Scanner│────────────────────▶│   Registry   │
+│ (read files) │                     │ (in-memory)  │
+└──────────────┘                     └──────┬───────┘
+                                            │ Registry.lookup()
+┌──────────────┐                           │              ┌──────────────┐
+│ Task Analyzer│◀──────────────────────────┼──────────────│ Combo Planner│
+│(parse intent)│                           │              │(build plan)  │
+└──────┬───────┘                           │              └──────┬───────┘
+       │ User request                       │                     │
+       │ (natural language)                 │                     │ ExecutionPlan
+       ▼                                    │                     ▼
+┌──────────────┐     ExecutionPlan        │              ┌──────────────┐
+│Task Analyzer │───────────────────────────▶│─────────────▶│   Engine     │
+│ (capabilities)                            │              │(execute combo)│
+└────────────────                            │              └──────┬───────┘
+                                                  │                     │
+                                                  │                     │ SkillContext
+                                                  │                     ▼
+                                                  │              ┌──────────────┐
+                                                  └──────────────│   Monitor    │
+                                                                 │(track status)│
+                                                                 └──────────────┘
+```
+
+### Data Types Exchanged
+
+| From → To | Data Type | Description |
+|-----------|-----------|-------------|
+| Scanner → Registry | `ScanResult` | List of discovered skills with metadata |
+| Registry → Planner | `Skill[]` | Queried skills for planning |
+| Task Analyzer → Planner | `UserRequest` | Parsed user intent with required capabilities |
+| Planner → Engine | `ExecutionPlan` | Ordered steps with dependencies |
+| Engine → Monitor | `ComboResult` | Execution results with outputs/errors |
+
+### Execution Semantics
+
+**Serial Execution:**
+```
+Step 1 (Skill A) → Step 2 (Skill B) → Step 3 (Skill C)
+     │                  │                  │
+     └──────────────────┴──────────────────┘
+                    Shared Context
+Skill B can read outputs from Skill A via context
+Skill C can read outputs from Skill A and B
+```
+
+**Parallel Execution:**
+```
+Step 1 ──┬── Skill A ──┬── Output A ─┐
+         ├── Skill B ──┼── Output B ─┼──▶ Aggregation ──▶ Final Output
+         └── Skill C ──┘── Output C ─┘
+All skills start simultaneously
+Results merged according to ResultAggregation strategy
+```
+
+**Interleaved Execution:**
+```
+Skill A: start ──▶ yield ──▶ resume ──▶ complete
+                    │           │
+         Skill B:       start ──▶ yield ──▶ complete
+                                        │
+                      (control alternates at yield points)
 ```
 
 ## 3. Core Components
@@ -62,20 +137,56 @@ skill:
 ### 3.3 Combo Engine
 The heart of Skill-Combo - determines how skills execute together.
 
-**Execution Modes**:
+**Combo Type** (structural pattern - HOW skills are composed):
+| Type | Description | Example |
+|------|-------------|---------|
+| `chain` | Skills chained - output feeds to next | A → B → C |
+| `parallel` | Skills run independently | A ‖ B ‖ C |
+| `wrap` | Wrapper skill around sub-combo | A → [B → C] → A |
+| `conditional` | Branch based on condition | A ? {condition} → B : C |
 
+**Execution Mode** (temporal pattern - WHEN skills run):
 | Mode | Description | Use Case |
 |------|-------------|----------|
-| `serial` | One skill after another | Linear dependencies |
+| `serial` | One skill after another completes | Chain dependencies |
 | `parallel` | Multiple skills simultaneously | Independent tasks |
-| `interleaved` | Skills alternate/give control | Collaborative workflows |
-| `composite` | N skills form a meta-skill | Reusable combo |
+| `interleaved` | Skills yield control periodically | Long-running tasks, collaborative |
 
-**Combo Types**:
-1. **Chain Combo**: A → B → C (output of one feeds into next)
-2. **Parallel Combo**: A ‖ B ‖ C (all run together, merge results)
-3. **Wrap Combo**: A → [B → C] → A (B-C as sub-combo)
-4. **Conditional Combo**: A ? B : C (branch based on A's result)
+**Key Distinction:**
+- **Combo Type** defines the structural relationship between skills
+- **Execution Mode** defines the temporal execution order
+
+**Result Aggregation** (for parallel execution):
+| Strategy | Behavior |
+|----------|----------|
+| `merge` | Deep merge all outputs (default) |
+| `override` | Later skills override earlier |
+| `fail-on-conflict` | Error if keys overlap |
+| `first-win` | First non-null value wins |
+
+**Wrap Combo Detail:**
+```
+A → [B → C] → A
+│           │
+└───────────┘
+Wrapper skill A:
+1. Executes once at start (setup)
+2. Then runs sub-combo [B → C] as a unit
+3. Executes again at end (teardown)
+Data flows through B→C using A's context
+```
+
+**Conditional Combo Detail:**
+```yaml
+combo:
+  name: "code-review-action"
+  type: conditional
+  condition: "issue.severity"
+  branches:
+    security: ["security-auditor", "security-fix"]
+    performance: ["performance-optimization", "benchmark"]
+    general: ["code-review"]
+```
 
 ### 3.4 Task Analyzer
 - Parses user requests to understand intent
@@ -283,18 +394,69 @@ E:/AI_field/skill-combo/
 └── package.json
 ```
 
-## 12. Success Criteria
+## 12. Success Criteria (Measurable)
 
-| Criterion | Measure |
-|-----------|---------|
-| Skill Discovery | Scans and catalogs all skills in skill directories |
-| Combo Execution | Runs a serial combo of 2+ skills successfully |
-| CLI Functionality | All commands (scan, list, run) work |
-| Plugin Installation | Can be installed as OpenCode skill |
-| Token Efficiency | Combo execution uses fewer tokens than sequential |
+| Criterion | Measure | Verification Method |
+|-----------|---------|---------------------|
+| Skill Discovery | Scans and catalogs all skills in skill directories | Unit test with mock filesystem, verify all test skills found |
+| Skill Metadata | Extracts name, description, categories, capabilities, inputs, outputs | Unit tests verify each field extracted correctly |
+| Combo Execution | Runs a serial combo of 2+ skills successfully | Integration test with mock skills, verify sequential execution |
+| CLI Functionality | All commands (scan, list, run) work | CLI tests verify command output |
+| Plugin Installation | Can be installed as OpenCode skill | Manual verification via skill install command |
+| Result Aggregation | Parallel outputs merge according to aggregation strategy | Unit tests for each ResultAggregation strategy |
+
+### Token Efficiency Measurement
+
+Token efficiency is measured by:
+1. **Baseline**: Sum of tokens for each skill invoked individually
+2. **Combo**: Tokens used when skills run as a combo
+3. **Formula**: `efficiency = (baseline - combo) / baseline * 100%`
+
+Target: **≥20% token reduction** through:
+- Shared context (skills don't reload state)
+- Parallel execution (concurrent skill runs)
+- Reduced redundant processing
 
 ---
 
-**Document Version**: 1.0
+## 13. OpenCode Integration Points
+
+Skill-Combo integrates with OpenCode via:
+
+1. **Skill Loader Hook**: Intercepts skill discovery to build registry
+2. **Execution API**: Uses OpenCode's `task()` function to invoke skills
+3. **Context Sharing**: Shares session context between chained skills
+4. **Tool Integration**: Uses existing tools (grep, read, write, etc.)
+
+### Integration Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    OpenCode Runtime                          │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│  │ Skill Loader │───▶│ Skill-Combo │◀───│  task()    │   │
+│  │   (hooks)    │    │   Plugin    │    │  (invoke)  │   │
+│  └─────────────┘    └──────┬──────┘    └─────────────┘   │
+│                            │                                │
+│                     ┌──────▼──────┐                        │
+│                     │   Context   │                        │
+│                     │   Store     │                        │
+│                     └─────────────┘                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Hook Points
+
+| OpenCode Hook | Skill-Combo Usage |
+|---------------|-------------------|
+| `skill.discovered` | Add skill to registry |
+| `skill.loaded` | Track skill dependencies |
+| `tool.execute.before` | Intercept skill invocation |
+| `tool.execute.after` | Capture skill outputs |
+
+---
+
+**Document Version**: 1.1
 **Last Updated**: 2026-04-17
-**Status**: Draft for Review
+**Status**: Revised based on Oracle/Momus review
