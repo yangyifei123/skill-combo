@@ -168,12 +168,22 @@ export class Engine implements IEngine {
         const timeout = step.timeout ?? combo.timeout ?? this.config.skillTimeout;
 
         try {
-          output = await Promise.race([
-            invoker.invoke(step.skill_id, context),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error(`Skill ${step.skill_id} timed out after ${timeout}ms`)), timeout)
-            )
-          ]);
+          // Fix: Cleanup timeout timer to prevent timer leaks
+          let timeoutId: ReturnType<typeof setTimeout> | undefined;
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error(`Skill ${step.skill_id} timed out after ${timeout}ms`)), timeout);
+          });
+
+          try {
+            output = await Promise.race([
+              invoker.invoke(step.skill_id, context),
+              timeoutPromise
+            ]);
+          } finally {
+            if (timeoutId !== undefined) {
+              clearTimeout(timeoutId);
+            }
+          }
 
           // Store result in cache for future deduplication
           if (this.cache && output) {
@@ -402,8 +412,14 @@ export class Engine implements IEngine {
     outputs[wrapperSkillId] = wrapperResult.result;
 
     // Phase 2: Execute sub-steps serially
+    // Fix: Remap depends_on to internal indices since wrapper steps are filtered out
     if (subSteps.length > 0) {
-      const subResult = await this.executeSerial({} as Combo, subSteps, invoker, outputs);
+      const remappedSteps = subSteps.map((step, idx) => ({
+        ...step,
+        step: idx,
+        depends_on: [],  // Sub-steps execute sequentially; wrapper dependencies are resolved by the setup phase
+      }));
+      const subResult = await this.executeSerial({} as Combo, remappedSteps, invoker, outputs);
       totalTokens += subResult.tokens_used;
       totalDuration += subResult.duration_ms;
 
@@ -452,12 +468,17 @@ export class Engine implements IEngine {
     );
   }
 
-  /**
+/**
    * Execute a conditional combo - select branch based on condition evaluation
-    * Branch is selected based on condition result (true/false)
-    * Supports: env, ctx, skill-output conditions
-    * Note: skill-output conditions require context from previous steps
-    */
+   * Branch is selected based on condition result (true/false)
+   * Supports: env, ctx, skill-output conditions
+   *
+   * Note: skill-output conditions require context from previously executed steps.
+   * In a standalone conditional combo (not part of a larger chain), only 'env' and
+   * 'ctx' conditions are useful since no prior steps have produced outputs yet.
+   * For skill-output conditions to work, use conditional within a serial combo
+   * where prior steps have already populated the context with their outputs.
+   */
   async executeConditional(
     condition: { type: string; expression: string },
     trueBranch: ExecutionStep[],

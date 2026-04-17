@@ -7,6 +7,7 @@ import { Planner } from './planner';
 import { Registry } from './registry';
 import { scanSkills } from './scanner';
 import { SkillInvoker, SkillContext, SkillOutput } from './types';
+import { success, error, warning, colorize } from './colors';
 
 /**
  * CLI configuration options
@@ -498,7 +499,7 @@ export async function main(args: string[]): Promise<void> {
   switch (command) {
     case 'scan': {
       const result = await cli.scan();
-      console.log(`Scan complete: ${result.skills} skills found, ${result.errors} errors`);
+      console.log(colorize(`Scan complete: ${result.skills} skills found, ${result.errors} errors`, result.errors > 0 ? warning : success));
       break;
     }
 
@@ -558,12 +559,12 @@ export async function main(args: string[]): Promise<void> {
       }
 
       if (result.success) {
-        console.log('Combo executed successfully!');
+        console.log(colorize('✓ Combo executed successfully!', success));
         console.log('Outputs:', JSON.stringify(result.outputs, null, 2));
         displayExecutionStats(result, verbose);
       } else {
-        console.error('Combo execution failed:');
-        result.errors.forEach(err => { console.error(`  - ${err}`); });
+        console.error(colorize('✗ Combo execution failed:', error));
+        result.errors.forEach(err => { console.error(colorize(`  - ${err}`, error)); });
         process.exit(1);
       }
       break;
