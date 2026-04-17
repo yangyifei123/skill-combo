@@ -16,7 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.computeCacheKey = exports.MemoryCache = exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.loadDefaultCombos = exports.loadCombosFromDirectory = exports.loadComboFromFile = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
+exports.colorize = exports.supportsColor = exports.bold = exports.dim = exports.info = exports.warning = exports.error = exports.success = exports.computeCacheKey = exports.MemoryCache = exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.loadDefaultCombos = exports.loadCombosFromDirectory = exports.loadComboFromFile = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
 var cli_1 = require("./cli");
 Object.defineProperty(exports, "CLI", { enumerable: true, get: function () { return cli_1.CLI; } });
 Object.defineProperty(exports, "DefaultInvoker", { enumerable: true, get: function () { return cli_1.DefaultInvoker; } });
@@ -40,5 +40,14 @@ Object.defineProperty(exports, "parseSkillMarkdown", { enumerable: true, get: fu
 var cache_1 = require("./cache");
 Object.defineProperty(exports, "MemoryCache", { enumerable: true, get: function () { return cache_1.MemoryCache; } });
 Object.defineProperty(exports, "computeCacheKey", { enumerable: true, get: function () { return cache_1.computeCacheKey; } });
+var colors_1 = require("./colors");
+Object.defineProperty(exports, "success", { enumerable: true, get: function () { return colors_1.success; } });
+Object.defineProperty(exports, "error", { enumerable: true, get: function () { return colors_1.error; } });
+Object.defineProperty(exports, "warning", { enumerable: true, get: function () { return colors_1.warning; } });
+Object.defineProperty(exports, "info", { enumerable: true, get: function () { return colors_1.info; } });
+Object.defineProperty(exports, "dim", { enumerable: true, get: function () { return colors_1.dim; } });
+Object.defineProperty(exports, "bold", { enumerable: true, get: function () { return colors_1.bold; } });
+Object.defineProperty(exports, "supportsColor", { enumerable: true, get: function () { return colors_1.supportsColor; } });
+Object.defineProperty(exports, "colorize", { enumerable: true, get: function () { return colors_1.colorize; } });
 __exportStar(require("./types"), exports);
 //# sourceMappingURL=index.js.map

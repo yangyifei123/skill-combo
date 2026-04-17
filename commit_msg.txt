@@ -1,0 +1,8 @@
+fix: minor issues + colors module
+
+Round 4 fixes:
+- Fix timer leak in Promise.race timeout cleanup
+- Fix executeWrap dependency remapping for filtered steps  
+- Document conditional skill-output limitation
+- Add colors module for ANSI terminal output
+- Add colored success/error messages in CLI

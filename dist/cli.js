@@ -9,6 +9,7 @@ const combo_loader_1 = require("./combo-loader");
 const planner_1 = require("./planner");
 const registry_1 = require("./registry");
 const scanner_1 = require("./scanner");
+const colors_1 = require("./colors");
 /**
  * Display execution statistics in verbose mode
  */
@@ -416,7 +417,7 @@ async function main(args) {
     switch (command) {
         case 'scan': {
             const result = await cli.scan();
-            console.log(`Scan complete: ${result.skills} skills found, ${result.errors} errors`);
+            console.log((0, colors_1.colorize)(`Scan complete: ${result.skills} skills found, ${result.errors} errors`, result.errors > 0 ? colors_1.warning : colors_1.success));
             break;
         }
         case 'list': {
@@ -467,13 +468,13 @@ async function main(args) {
                 return;
             }
             if (result.success) {
-                console.log('Combo executed successfully!');
+                console.log((0, colors_1.colorize)('✓ Combo executed successfully!', colors_1.success));
                 console.log('Outputs:', JSON.stringify(result.outputs, null, 2));
                 displayExecutionStats(result, verbose);
             }
             else {
-                console.error('Combo execution failed:');
-                result.errors.forEach(err => { console.error(`  - ${err}`); });
+                console.error((0, colors_1.colorize)('✗ Combo execution failed:', colors_1.error));
+                result.errors.forEach(err => { console.error((0, colors_1.colorize)(`  - ${err}`, colors_1.error)); });
                 process.exit(1);
             }
             break;

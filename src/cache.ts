@@ -1,12 +1,9 @@
 // Cache implementation for skill result deduplication
 // Deduplicates results based on skill_id + inputs
 
-export interface Cache {
-  get(key: string): Promise<unknown | undefined>;
-  set(key: string, value: unknown): Promise<void>;
-  has(key: string): Promise<boolean>;
-  clear(): Promise<void>;
-}
+import { Cache } from './types';
+
+export { Cache } from './types';
 
 export class MemoryCache implements Cache {
   private store = new Map<string, { value: unknown; timestamp: number }>();

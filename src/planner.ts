@@ -50,11 +50,11 @@ export class Planner implements IPlanner {
   /**
    * Suggest best combo for a task description
    * @deprecated Not implemented - requires NLP task analysis
+   * @returns Empty array - NLP integration required for implementation
    */
   suggest(_taskDescription: string, _skills: Skill[]): Combo[] {
     // Not implemented - requires NLP task analysis to match user intent to combos
     // Return empty array until this is implemented
-    console.warn('Planner.suggest() is not implemented - requires NLP integration');
     return [];
   }
 

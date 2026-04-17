@@ -1,0 +1,1 @@
+refactor: dedupe Cache, add exports, gitignore, remove console.warn, bump 0.2.0 

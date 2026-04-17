@@ -32,11 +32,16 @@ export declare class Engine implements IEngine {
      */
     executeInterleaved(_steps: ExecutionStep[], _invoker: SkillInvoker): Promise<ComboResult>;
     /**
-     * Execute a conditional combo - select branch based on condition evaluation
-      * Branch is selected based on condition result (true/false)
-      * Supports: env, ctx, skill-output conditions
-      * Note: skill-output conditions require context from previous steps
-      */
+       * Execute a conditional combo - select branch based on condition evaluation
+       * Branch is selected based on condition result (true/false)
+       * Supports: env, ctx, skill-output conditions
+       *
+       * Note: skill-output conditions require context from previously executed steps.
+       * In a standalone conditional combo (not part of a larger chain), only 'env' and
+       * 'ctx' conditions are useful since no prior steps have produced outputs yet.
+       * For skill-output conditions to work, use conditional within a serial combo
+       * where prior steps have already populated the context with their outputs.
+       */
     executeConditional(condition: {
         type: string;
         expression: string;
