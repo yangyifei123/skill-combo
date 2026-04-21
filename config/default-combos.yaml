@@ -25,3 +25,55 @@ combos:
     skills:
       - frontend-design
       - ts-react-nextjs
+
+  - name: full-stack-review
+    description: "Full application review pipeline: security audit, performance optimization, and testing strategies"
+    type: chain
+    execution: serial
+    skills:
+      - security-auditor
+      - performance-optimization
+      - testing-strategies
+
+  - name: api-first
+    description: "API design to implementation: RESTful API design, Python patterns, and testing strategies"
+    type: chain
+    execution: serial
+    skills:
+      - api-rest-design
+      - python-patterns
+      - testing-strategies
+
+  - name: frontend-vue
+    description: "Vue frontend pipeline: UI/UX design followed by TypeScript and Vue/Svelte implementation"
+    type: chain
+    execution: serial
+    skills:
+      - frontend-design
+      - ts-vue-svelte
+
+  - name: deploy-pipeline
+    description: "Full deployment pipeline: testing strategies, containerization with Docker, and Kubernetes deployment"
+    type: chain
+    execution: serial
+    skills:
+      - testing-strategies
+      - docker-patterns
+      - kubernetes-patterns
+
+  - name: content-pipeline
+    description: "Content creation pipeline: strategy planning, SEO content writing, and persuasive copywriting"
+    type: chain
+    execution: serial
+    skills:
+      - content-strategy
+      - seo-content-writer
+      - copywriting
+
+  - name: skill-audit
+    description: "Audit a skill's quality: evaluate skill design and judge quality in parallel"
+    type: parallel
+    execution: parallel
+    skills:
+      - skill-creator
+      - skill-judge

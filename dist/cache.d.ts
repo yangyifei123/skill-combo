@@ -1,9 +1,5 @@
-export interface Cache {
-    get(key: string): Promise<unknown | undefined>;
-    set(key: string, value: unknown): Promise<void>;
-    has(key: string): Promise<boolean>;
-    clear(): Promise<void>;
-}
+import { Cache } from './types';
+export { Cache } from './types';
 export declare class MemoryCache implements Cache {
     private store;
     private ttl?;

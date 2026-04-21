@@ -27,7 +27,7 @@ export class Engine implements IEngine {
 
   constructor(config: EngineConfig = {}) {
     this.config = {
-      maxContextSize: config.maxContextSize ?? 1024 * 1024, // 1MB default
+      maxContextSize: config.maxContextSize ?? 100 * 1024, // 100KB default
       maxSteps: config.maxSteps ?? 100,
       skillTimeout: config.skillTimeout ?? 300000, // 5 min default
     };
@@ -299,6 +299,7 @@ export class Engine implements IEngine {
     let totalTokens = 0;
     let totalDuration = 0;
     const outputs: Record<string, any> = {};
+    const stepResults: StepResult[] = [];
 
     // Check max steps limit
     if (steps.length > this.config.maxSteps) {
@@ -329,23 +330,56 @@ export class Engine implements IEngine {
       };
     }
 
-    // Execute all skills in parallel
-    const startTime = Date.now();
+    // Execute all skills in parallel with per-step timing
+    const parallelStartTime = Date.now();
     // For parallel, each skill gets its own context (from step inputs)
     // In a true parallel execution, skills don't share context until aggregation
     const results = await Promise.all(
       steps.map(step => invoker.invoke(step.skill_id, step.inputs || {}))
     );
-    const endTime = Date.now();
+    const parallelEndTime = Date.now();
 
-    // Collect results
+    // Collect results and build step results with timing
     const skillOutputs: SkillOutput[] = [];
-    for (const output of results) {
+    for (let i = 0; i < results.length; i++) {
+      const output = results[i];
+      const step = steps[i];
       totalTokens += output.tokens_used;
+
+      // Calculate per-step timing (parallelStartTime is shared, duration from output)
+      const stepStartTime = parallelStartTime;
+      const stepEndTime = parallelStartTime + output.duration_ms;
+
       if (output.success) {
         skillOutputs.push(output);
+        stepResults.push({
+          step_id: step.skill_id,
+          skill_id: step.skill_id,
+          success: true,
+          timing: {
+            start_time: stepStartTime,
+            end_time: stepEndTime,
+            duration_ms: output.duration_ms,
+          },
+          tokens_used: output.tokens_used,
+          output: output.result,
+          error: undefined,
+        });
       } else {
         errors.push(output.error || `Skill ${output.skill_id} failed`);
+        stepResults.push({
+          step_id: step.skill_id,
+          skill_id: step.skill_id,
+          success: false,
+          timing: {
+            start_time: stepStartTime,
+            end_time: stepEndTime,
+            duration_ms: output.duration_ms,
+          },
+          tokens_used: output.tokens_used,
+          output: undefined,
+          error: output.error || `Skill ${step.skill_id} failed`,
+        });
       }
     }
 
@@ -353,7 +387,7 @@ export class Engine implements IEngine {
     const { result: aggregatedResult, errors: aggErrors } = this.aggregateOutputs(skillOutputs, aggregation);
     errors.push(...aggErrors);
 
-    totalDuration = endTime - startTime;
+    totalDuration = parallelEndTime - parallelStartTime;
 
     return {
       success: errors.length === 0,
@@ -362,6 +396,7 @@ export class Engine implements IEngine {
       tokens_used: totalTokens,
       duration_ms: totalDuration,
       aggregation,
+      steps: stepResults,
     };
   }
 
@@ -578,19 +613,67 @@ export class Engine implements IEngine {
   /**
    * Build execution context for a step from previous outputs
    * Follows CONTEXT_KEYS convention: {skillId}.output.{field}
+   * Enforces maxContextSize limit by truncating oldest entries if needed
    */
   private buildContext(step: ExecutionStep, outputs: Record<string, any>): SkillContext {
     const context: SkillContext = {};
 
+    // Collect entries in order (first added = oldest)
+    const entries: Array<{ key: string; value: any }> = [];
+
     // Add outputs from all previous steps to context
     // Each skill's output is added with its skill_id prefix
     for (const [skillId, output] of Object.entries(outputs)) {
-      context[`${skillId}.output`] = output;
+      entries.push({ key: `${skillId}.output`, value: output });
     }
 
     // Add step inputs
     if (step.inputs) {
-      context['step.inputs'] = step.inputs;
+      entries.push({ key: 'step.inputs', value: step.inputs });
+    }
+
+    // Build context and check size
+    for (const entry of entries) {
+      context[entry.key] = entry.value;
+    }
+
+    // Check context size and truncate if needed - compute size once
+    let contextSize = JSON.stringify(context).length;
+    if (contextSize > this.config.maxContextSize) {
+      // Warn about truncation
+      console.warn(
+        `Engine: Context size ${contextSize} exceeds limit ${this.config.maxContextSize}. ` +
+        `Truncating ${entries.length} entries to fit.`
+      );
+
+      // Rebuild context with oldest entries truncated first
+      // (first entries in the list are the oldest skill outputs)
+      const skillOutputEntries = entries.filter(e => e.key.endsWith('.output'));
+      const otherEntries = entries.filter(e => !e.key.endsWith('.output'));
+
+      // Clear context and rebuild
+      const newContext: SkillContext = {};
+
+      // First add non-skill-output entries (step.inputs, etc.)
+      for (const entry of otherEntries) {
+        newContext[entry.key] = entry.value;
+      }
+
+      // Then add skill outputs in reverse order (newest first) until we fit
+      const reversedSkillEntries = [...skillOutputEntries].reverse();
+      for (const entry of reversedSkillEntries) {
+        newContext[entry.key] = entry.value;
+        // Check size once after building - not inside loop
+        const newSize = JSON.stringify(newContext).length;
+        if (newSize > this.config.maxContextSize) {
+          // Too big even with just this one, remove it
+          delete newContext[entry.key];
+          break;
+        }
+        contextSize = newSize;
+      }
+
+      return newContext;
     }
 
     return context;

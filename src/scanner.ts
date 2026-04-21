@@ -87,9 +87,9 @@ class SkillScanner {
   }
 
   /**
-   * Scans all skill directories and returns discovered skills
+   * Scans all skill directories and returns discovered skills with errors
    */
-  async scan(skillDirs: string[]): Promise<Skill[]> {
+  async scan(skillDirs: string[]): Promise<{ skills: Skill[]; errors: ScanError[] }> {
     const skills: Skill[] = [];
     const errors: ScanError[] = [];
 
@@ -99,7 +99,7 @@ class SkillScanner {
       }
     }
 
-    return skills;
+    return { skills, errors };
   }
 }
 
@@ -119,13 +119,23 @@ export async function scanSkills(skillDirs: string[] = SKILL_LOCATIONS, options:
     }
   }
 
-  // 执行扫描...
-  const skills = await scanner.scan(skillDirs);
+  // 执行扫描
+  let result = await scanner.scan(skillDirs);
+  let { skills, errors } = result;
+
+  // 增量扫描返回空 → 回退全量扫描
+  // 防止timestamp在未来或所有文件mtime都早于timestamp时漏扫
+  if (incremental && !force && skills.length === 0) {
+    const fullScanner = new SkillScanner();
+    const fullResult = await fullScanner.scan(skillDirs);
+    skills = fullResult.skills;
+    errors = fullResult.errors;
+  }
 
   // 保存时间戳
   await store.setLastScanTimestamp(Date.now());
 
-  return { skills, errors: [], timestamp: Date.now() };
+  return { skills, errors, timestamp: Date.now() };
 }
 
 /**

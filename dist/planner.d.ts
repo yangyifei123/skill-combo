@@ -13,6 +13,7 @@ export declare class Planner implements IPlanner {
     /**
      * Suggest best combo for a task description
      * @deprecated Not implemented - requires NLP task analysis
+     * @returns Empty array - NLP integration required for implementation
      */
     suggest(_taskDescription: string, _skills: Skill[]): Combo[];
     /**

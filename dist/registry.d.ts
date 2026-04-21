@@ -3,7 +3,7 @@
  *
  * Implements IRegistry interface from types.ts
  */
-import { Skill, Combo, IRegistry, SkillQuery } from './types';
+import { Skill, Combo, IRegistry, SkillQuery, ValidationError } from './types';
 export declare class Registry implements IRegistry {
     private skills;
     private combos;
@@ -32,6 +32,16 @@ export declare class Registry implements IRegistry {
      * All specified criteria must match
      */
     querySkills(criteria: SkillQuery): Skill[];
+    /**
+     * Validate a combo's structure
+     * Returns array of validation errors (empty if valid)
+     */
+    validateCombo(combo: Combo): ValidationError[];
+    /**
+     * Check if all skills referenced in a combo exist in the registry
+     * Returns array of missing skill IDs (empty if all exist)
+     */
+    validateComboSkills(combo: Combo): string[];
     /**
      * Add a combo to the registry
      */

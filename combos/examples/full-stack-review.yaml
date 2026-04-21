@@ -1,0 +1,8 @@
+name: full-stack-review
+description: "Full application review pipeline: security audit, performance optimization, and testing strategies"
+type: chain
+execution: serial
+skills:
+  - security-auditor
+  - performance-optimization
+  - testing-strategies

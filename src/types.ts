@@ -67,6 +67,12 @@ export interface Combo {
   schema?: ComboSchema;
   /** Default timeout for all steps in this combo (ms) */
   timeout?: number;
+  /** Estimated token usage for this combo (rough heuristic) */
+  token_estimate?: number;
+  /** Whether this combo is safe for parallel execution (default: true) */
+  parallel_safe?: boolean;
+  /** Tags for categorizing and discovering combos */
+  tags?: string[];
 }
 
 export interface ComboSchema {
@@ -321,7 +327,7 @@ export interface ValidationError {
  * Engine configuration options
  */
 export interface EngineConfig {
-  /** Maximum context size in bytes (default: 1MB) */
+  /** Maximum context size in characters (default: 100KB) */
   maxContextSize?: number;
   /** Maximum execution steps per combo (default: 100) */
   maxSteps?: number;

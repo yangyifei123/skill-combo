@@ -145,8 +145,14 @@ async function scanSkills(skillDirs = SKILL_LOCATIONS, options = {}) {
             scanner.setMinMtime(lastScan);
         }
     }
-    // 执行扫描...
-    const skills = await scanner.scan(skillDirs);
+    // 执行扫描
+    let skills = await scanner.scan(skillDirs);
+    // 增量扫描返回空 → 回退全量扫描
+    // 防止timestamp在未来或所有文件mtime都早于timestamp时漏扫
+    if (incremental && !force && skills.length === 0) {
+        const fullScanner = new SkillScanner();
+        skills = await fullScanner.scan(skillDirs);
+    }
     // 保存时间戳
     await store.setLastScanTimestamp(Date.now());
     return { skills, errors: [], timestamp: Date.now() };

@@ -1,0 +1,7 @@
+name: frontend-vue
+description: "Vue frontend pipeline: UI/UX design followed by TypeScript and Vue/Svelte implementation"
+type: chain
+execution: serial
+skills:
+  - frontend-design
+  - ts-vue-svelte

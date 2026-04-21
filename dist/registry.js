@@ -120,6 +120,45 @@ class Registry {
         });
     }
     /**
+     * Validate a combo's structure
+     * Returns array of validation errors (empty if valid)
+     */
+    validateCombo(combo) {
+        const errors = [];
+        // Validate name
+        if (!combo.name) {
+            errors.push({ field: 'name', message: 'Combo name is required' });
+        }
+        // Validate skills array
+        if (!combo.skills || !Array.isArray(combo.skills) || combo.skills.length === 0) {
+            errors.push({ field: 'skills', message: 'Combo must have a non-empty skills array' });
+        }
+        // Validate type
+        const validTypes = ['chain', 'parallel', 'wrap', 'conditional'];
+        if (!combo.type || !validTypes.includes(combo.type)) {
+            errors.push({
+                field: 'type',
+                message: `Invalid combo type "${combo.type}". Must be one of: ${validTypes.join(', ')}`,
+            });
+        }
+        return errors;
+    }
+    /**
+     * Check if all skills referenced in a combo exist in the registry
+     * Returns array of missing skill IDs (empty if all exist)
+     */
+    validateComboSkills(combo) {
+        const missing = [];
+        if (combo.skills && Array.isArray(combo.skills)) {
+            for (const skillId of combo.skills) {
+                if (!this.skills.has(skillId)) {
+                    missing.push(skillId);
+                }
+            }
+        }
+        return missing;
+    }
+    /**
      * Add a combo to the registry
      */
     addCombo(combo) {

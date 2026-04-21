@@ -7,6 +7,8 @@
 import {
   Skill,
   Combo,
+  ComboType,
+  ExecutionMode,
   IRegistry,
   SkillQuery,
   ValidationError,
@@ -145,6 +147,60 @@ export class Registry implements IRegistry {
 
       return true;
     });
+  }
+
+  /**
+   * Validate a combo's structure
+   * Returns array of validation errors (empty if valid)
+   */
+  validateCombo(combo: Combo): ValidationError[] {
+    const errors: ValidationError[] = [];
+
+    // Validate name
+    if (!combo.name) {
+      errors.push({ field: 'name', message: 'Combo name is required' });
+    }
+
+    // Validate skills array
+    if (!combo.skills || !Array.isArray(combo.skills) || combo.skills.length === 0) {
+      errors.push({ field: 'skills', message: 'Combo must have a non-empty skills array' });
+    }
+
+    // Validate type
+    const validTypes: ComboType[] = ['chain', 'parallel', 'wrap', 'conditional'];
+    if (!combo.type || !validTypes.includes(combo.type)) {
+      errors.push({
+        field: 'type',
+        message: `Invalid combo type "${combo.type}". Must be one of: ${validTypes.join(', ')}`,
+      });
+    }
+
+    // Validate execution mode
+    const validExecutions: ExecutionMode[] = ['serial', 'parallel'];
+    if (!combo.execution || !validExecutions.includes(combo.execution)) {
+      errors.push({
+        field: 'execution',
+        message: `Invalid execution mode "${combo.execution}". Must be one of: ${validExecutions.join(', ')}`,
+      });
+    }
+
+    return errors;
+  }
+
+  /**
+   * Check if all skills referenced in a combo exist in the registry
+   * Returns array of missing skill IDs (empty if all exist)
+   */
+  validateComboSkills(combo: Combo): string[] {
+    const missing: string[] = [];
+    if (combo.skills && Array.isArray(combo.skills)) {
+      for (const skillId of combo.skills) {
+        if (!this.skills.has(skillId)) {
+          missing.push(skillId);
+        }
+      }
+    }
+    return missing;
   }
 
   /**

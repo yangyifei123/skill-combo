@@ -45,16 +45,30 @@ export class OpenCodeInvoker implements SkillInvoker {
    */
   async invoke(skillId: string, context: SkillContext): Promise<SkillOutput> {
     const startTime = Date.now();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     try {
-      // Execute skill via OpenCode's skill tool
-      const result = await Promise.race([
-        this.skillTool({
-          name: skillId,
-          user_message: context as any,
-        }),
-        this.timeoutPromise(),
-      ]);
+      // Execute skill via OpenCode's skill tool with timeout
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`Skill invocation timed out after ${this.timeout}ms`));
+        }, this.timeout);
+      });
+
+      let result: any;
+      try {
+        result = await Promise.race([
+          this.skillTool({
+            name: skillId,
+            user_message: context as any,
+          }),
+          timeoutPromise,
+        ]);
+      } finally {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+        }
+      }
 
       const duration = Date.now() - startTime;
 
@@ -103,17 +117,6 @@ export class OpenCodeInvoker implements SkillInvoker {
     // For now, assume all skills are available if they exist in the registry
     // A real implementation might check with OpenCode's skill registry
     return skillId.length > 0 && /^[a-zA-Z0-9-_]+$/.test(skillId);
-  }
-
-  /**
-   * Timeout promise that rejects after configured duration
-   */
-  private timeoutPromise(): Promise<never> {
-    return new Promise((_, reject) => {
-      setTimeout(() => {
-        reject(new Error(`Skill invocation timed out after ${this.timeout}ms`));
-      }, this.timeout);
-    });
   }
 
   /**

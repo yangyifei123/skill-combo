@@ -522,17 +522,14 @@ export async function main(args: string[]): Promise<void> {
     }
 
     case 'run': {
-      // Parse flags
-      const flags: string[] = [];
-      let comboName = args[1];
-
-      for (let i = 2; i < args.length; i++) {
-        if (args[i].startsWith('--')) {
-          flags.push(args[i]);
-        } else {
-          comboName = args[i];
-        }
-      }
+      // Parse combo name from args[1], flags from rest
+      const comboName = args[1];
+      // Parse flags supporting both --flag and --flag=value formats
+      const rawFlags = args.slice(2).filter(a => a.startsWith('--'));
+      const flags = rawFlags.map(f => {
+        const eqIdx = f.indexOf('=');
+        return eqIdx === -1 ? f : f.substring(0, eqIdx);
+      });
 
       const debug = flags.includes('--debug');
       const dryRun = flags.includes('--dry-run');
@@ -551,6 +548,23 @@ export async function main(args: string[]): Promise<void> {
       // Use DefaultInvoker for CLI (mock execution)
       const debugCli = new CLI(config);
       const invoker = new DefaultInvoker();
+
+      // Validate combo exists before execution
+      const combo = debugCli.getRegistry().getCombo(comboName);
+      if (!combo) {
+        const availableCombos = debugCli.listCombos();
+        console.error(colorize(`✗ Combo not found: ${comboName}`, error));
+        console.error('Available combos:');
+        if (availableCombos.count === 0) {
+          console.error('  (none - no combos registered)');
+        } else {
+          availableCombos.combos.forEach(c => {
+            console.error(`  - ${c.name}`);
+          });
+        }
+        process.exit(1);
+      }
+
       const result = await debugCli.runCombo(comboName, invoker, undefined, dryRun);
 
       if (result.dryRun) {

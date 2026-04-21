@@ -1,3 +1,33 @@
-dist/  
-node_modules/  
-.skill-combo-scan-timestamp 
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Scan cache
+.skill-combo-scan-timestamp
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+
+# Temp files
+*.tmp
+*.swp
+*~
+
+# Environment (local overrides)
+.env
+.env.local
+.env.*.local

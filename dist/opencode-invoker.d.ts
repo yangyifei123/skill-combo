@@ -41,10 +41,6 @@ export declare class OpenCodeInvoker implements SkillInvoker {
      */
     isAvailable(skillId: string): Promise<boolean>;
     /**
-     * Timeout promise that rejects after configured duration
-     */
-    private timeoutPromise;
-    /**
      * Estimate token usage when not provided by skill
      * This is a rough heuristic based on input/output size
      */

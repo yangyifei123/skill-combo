@@ -31,15 +31,29 @@ class OpenCodeInvoker {
      */
     async invoke(skillId, context) {
         const startTime = Date.now();
+        let timeoutId;
         try {
-            // Execute skill via OpenCode's skill tool
-            const result = await Promise.race([
-                this.skillTool({
-                    name: skillId,
-                    user_message: context,
-                }),
-                this.timeoutPromise(),
-            ]);
+            // Execute skill via OpenCode's skill tool with timeout
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutId = setTimeout(() => {
+                    reject(new Error(`Skill invocation timed out after ${this.timeout}ms`));
+                }, this.timeout);
+            });
+            let result;
+            try {
+                result = await Promise.race([
+                    this.skillTool({
+                        name: skillId,
+                        user_message: context,
+                    }),
+                    timeoutPromise,
+                ]);
+            }
+            finally {
+                if (timeoutId !== undefined) {
+                    clearTimeout(timeoutId);
+                }
+            }
             const duration = Date.now() - startTime;
             // Parse skill output
             // Skills typically return { result, success, ... } or just the raw result
@@ -84,16 +98,6 @@ class OpenCodeInvoker {
         // For now, assume all skills are available if they exist in the registry
         // A real implementation might check with OpenCode's skill registry
         return skillId.length > 0 && /^[a-zA-Z0-9-_]+$/.test(skillId);
-    }
-    /**
-     * Timeout promise that rejects after configured duration
-     */
-    timeoutPromise() {
-        return new Promise((_, reject) => {
-            setTimeout(() => {
-                reject(new Error(`Skill invocation timed out after ${this.timeout}ms`));
-            }, this.timeout);
-        });
     }
     /**
      * Estimate token usage when not provided by skill

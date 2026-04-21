@@ -1,0 +1,8 @@
+name: deploy-pipeline
+description: "Full deployment pipeline: testing strategies, containerization with Docker, and Kubernetes deployment"
+type: chain
+execution: serial
+skills:
+  - testing-strategies
+  - docker-patterns
+  - kubernetes-patterns
