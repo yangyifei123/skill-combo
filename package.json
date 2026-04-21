@@ -37,6 +37,8 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "scan": "node dist/cli.js scan",
     "list": "node dist/cli.js list",
     "combo": "node dist/cli.js combo"
