@@ -1,7 +1,87 @@
 ---
 name: skill-combo
-description: Skill orchestration framework for OpenCode that enables multiple skills to work together in combos. Use when you need to chain, parallelize, or compose multiple skills into coordinated workflows. Triggers on "orchestrate skills", "chain skills", "run skills in parallel", "skill combo", "skill pipeline", "execute multiple skills together", or when a task naturally decomposes into sequential or parallel skill invocations.
+description: ACTIVE EVERY SESSION. Auto-loads on every conversation. Skill orchestration framework that chains multiple skills into combos for maximum effect. When a task needs 2+ skills working together, automatically recommends or executes the best combo. Triggers on multi-step tasks, skill composition, or any task that naturally decomposes into sequential or parallel sub-tasks.
 ---
+
+## Persistence
+
+ACTIVE EVERY SESSION. No revert. When loaded, skill-combo monitors every user request for multi-skill opportunities.
+
+## Behavior Mode
+
+### CLI Mode (outside OpenCode runtime) — Passive Recommendation
+When not in OpenCode plugin runtime:
+1. Detect when user's task involves 2+ skills
+2. Recommend the best combo from registry
+3. Show execution plan with `--dry-run`
+4. Let user decide whether to proceed
+5. Use `node dist/cli.js run <combo>` to execute
+
+### Plugin Mode (inside OpenCode runtime) — Active Orchestration
+When OpenCode runtime detected (`globalThis.skill` exists):
+1. Automatically decompose multi-skill tasks
+2. Select or create appropriate combo
+3. Execute via `OpenCodeInvoker` using real `skill()` calls
+4. Chain outputs between steps automatically
+5. Report results with per-step stats
+
+## Decision Framework
+
+For EVERY user request, evaluate:
+
+| Task Pattern | Recommended Action |
+|-------------|-------------------|
+| Single skill suffices | Skip skill-combo, use skill directly |
+| 2-3 sequential steps | Use chain combo |
+| 2+ independent checks | Use parallel combo |
+| Setup + work + cleanup | Use wrap combo |
+| Branch on condition | Use conditional combo |
+| Complex multi-phase | Compose multiple combos |
+
+## Quick Combo Reference (103 skills, 10 presets)
+
+Built-in combos available immediately:
+- `frontend-dev`: frontend-design → ts-react-nextjs
+- `api-first`: api-rest-design → python-patterns → testing-strategies
+- `deploy-pipeline`: testing-strategies → docker-patterns → kubernetes-patterns
+- `code-review-partial`: performance-optimization + testing-strategies (parallel)
+- `skill-audit`: skill-creator + skill-judge (parallel)
+- `docs-pipeline`: code-docs → project-docs
+- `content-creation`: content-research-writer → humanizer
+
+## Auto-Recommendation Rules
+
+When user describes a task, match against these patterns:
+
+| User says | Recommend combo |
+|-----------|----------------|
+| "build a frontend" | frontend-dev |
+| "design and implement API" | api-first |
+| "deploy to production" | deploy-pipeline |
+| "review this code" | code-review-partial |
+| "create documentation" | docs-pipeline |
+| "write about X" | content-creation |
+| "audit this skill" | skill-audit |
+| "refactor safely" | refactoring-safely → testing-strategies |
+| "security check" | security-auditor + security-best-practices (parallel) |
+| "full-stack feature" | frontend-dev + api-first + testing-strategies |
+
+## Creating Custom Combos
+
+New combo in `combos/examples/`:
+
+```yaml
+name: security-full-audit
+type: parallel
+execution: parallel
+skills:
+  - security-auditor
+  - security-best-practices
+  - clawdefender
+```
+
+Validate: `node dist/cli.js combos --validate`
+Test: `node dist/cli.js run security-full-audit --dry-run`
 
 Skill-Combo is a skill orchestration framework that treats skill composition like fighting game combos — multiple skills chained together into powerful coordinated attacks that reduce token usage and improve task completion speed.
 
