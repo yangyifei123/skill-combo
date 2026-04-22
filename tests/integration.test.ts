@@ -44,8 +44,8 @@ describe('Integration Tests', () => {
         expect(result.plan).toHaveProperty('skillOrder');
         expect(result.plan).toHaveProperty('totalSteps');
         expect(result.plan).toHaveProperty('comboName');
-        expect(result.plan.skillOrder).toContain('market-research-1.0.0');
-        expect(result.plan.skillOrder).toContain('seo-content-writer');
+        expect(result.plan.skillOrder).toContain('content-research-writer');
+        expect(result.plan.skillOrder).toContain('humanizer');
         expect(result.plan.totalSteps).toBe(2);
         expect(result.plan.comboName).toBe('research-report');
       }
@@ -61,7 +61,7 @@ describe('Integration Tests', () => {
       // Verify dry-run returned plan info
       if (result.plan) {
         expect(result.plan.skillOrder).toEqual(
-          expect.arrayContaining(['market-research-1.0.0', 'seo-content-writer'])
+          expect.arrayContaining(['content-research-writer', 'humanizer'])
         );
         expect(result.plan.comboType).toBe('chain');
         expect(result.plan.executionMode).toBe('serial');

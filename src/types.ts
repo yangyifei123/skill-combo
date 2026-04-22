@@ -164,6 +164,8 @@ export interface StepResult {
   tokens_used?: number;
   output?: unknown;
   error?: string;
+  /** Number of retries attempted (0 if no retries) */
+  retry_count?: number;
 }
 
 /**
@@ -335,6 +337,10 @@ export interface EngineConfig {
   skillTimeout?: number;
   /** Optional cache for result deduplication */
   cache?: Cache;
+  /** Maximum retry attempts for transient failures (default: 0 = no retry) */
+  maxRetries?: number;
+  /** Delay between retries in ms (default: 1000) */
+  retryDelayMs?: number;
 }
 
 /**
@@ -342,7 +348,7 @@ export interface EngineConfig {
  */
 export interface Cache {
   get(key: string): Promise<unknown | undefined>;
-  set(key: string, value: unknown): Promise<void>;
+  set(key: string, value: unknown, ttlMs?: number): Promise<void>;
   has(key: string): Promise<boolean>;
   clear(): Promise<void>;
 }

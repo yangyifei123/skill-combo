@@ -141,6 +141,14 @@ class Registry {
                 message: `Invalid combo type "${combo.type}". Must be one of: ${validTypes.join(', ')}`,
             });
         }
+        // Validate execution mode
+        const validExecutions = ['serial', 'parallel'];
+        if (!combo.execution || !validExecutions.includes(combo.execution)) {
+            errors.push({
+                field: 'execution',
+                message: `Invalid execution mode "${combo.execution}". Must be one of: ${validExecutions.join(', ')}`,
+            });
+        }
         return errors;
     }
     /**

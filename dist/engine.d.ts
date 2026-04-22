@@ -56,8 +56,20 @@ export declare class Engine implements IEngine {
         expression: string;
     }, context: SkillContext): Promise<boolean>;
     /**
+     * Determine if an error is transient and retryable
+     * Non-retryable: skill not found, skill not available, validation errors
+     * Retryable: timeouts, network errors, temporary failures
+     */
+    private isRetryableError;
+    /**
+     * Invoke a skill with retry logic for transient failures
+     * Returns { output, retryCount } where retryCount is total attempts - 1
+     */
+    private invokeWithRetry;
+    /**
      * Build execution context for a step from previous outputs
      * Follows CONTEXT_KEYS convention: {skillId}.output.{field}
+     * Enforces maxContextSize limit by truncating oldest entries if needed
      */
     private buildContext;
     /**

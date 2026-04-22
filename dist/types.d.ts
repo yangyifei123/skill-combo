@@ -60,6 +60,12 @@ export interface Combo {
     schema?: ComboSchema;
     /** Default timeout for all steps in this combo (ms) */
     timeout?: number;
+    /** Estimated token usage for this combo (rough heuristic) */
+    token_estimate?: number;
+    /** Whether this combo is safe for parallel execution (default: true) */
+    parallel_safe?: boolean;
+    /** Tags for categorizing and discovering combos */
+    tags?: string[];
 }
 export interface ComboSchema {
     input: Record<string, string>;
@@ -140,6 +146,8 @@ export interface StepResult {
     tokens_used?: number;
     output?: unknown;
     error?: string;
+    /** Number of retries attempted (0 if no retries) */
+    retry_count?: number;
 }
 /**
  * Skill invocation interface - HOW skills are actually executed
@@ -292,7 +300,7 @@ export interface ValidationError {
  * Engine configuration options
  */
 export interface EngineConfig {
-    /** Maximum context size in bytes (default: 1MB) */
+    /** Maximum context size in characters (default: 100KB) */
     maxContextSize?: number;
     /** Maximum execution steps per combo (default: 100) */
     maxSteps?: number;
@@ -300,13 +308,17 @@ export interface EngineConfig {
     skillTimeout?: number;
     /** Optional cache for result deduplication */
     cache?: Cache;
+    /** Maximum retry attempts for transient failures (default: 0 = no retry) */
+    maxRetries?: number;
+    /** Delay between retries in ms (default: 1000) */
+    retryDelayMs?: number;
 }
 /**
  * Cache interface for result deduplication
  */
 export interface Cache {
     get(key: string): Promise<unknown | undefined>;
-    set(key: string, value: unknown): Promise<void>;
+    set(key: string, value: unknown, ttlMs?: number): Promise<void>;
     has(key: string): Promise<boolean>;
     clear(): Promise<void>;
 }

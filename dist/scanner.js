@@ -119,7 +119,7 @@ class SkillScanner {
         }
     }
     /**
-     * Scans all skill directories and returns discovered skills
+     * Scans all skill directories and returns discovered skills with errors
      */
     async scan(skillDirs) {
         const skills = [];
@@ -129,7 +129,7 @@ class SkillScanner {
                 await this.scanDirectory(location, skills, errors);
             }
         }
-        return skills;
+        return { skills, errors };
     }
 }
 /**
@@ -146,16 +146,19 @@ async function scanSkills(skillDirs = SKILL_LOCATIONS, options = {}) {
         }
     }
     // 执行扫描
-    let skills = await scanner.scan(skillDirs);
+    let result = await scanner.scan(skillDirs);
+    let { skills, errors } = result;
     // 增量扫描返回空 → 回退全量扫描
     // 防止timestamp在未来或所有文件mtime都早于timestamp时漏扫
     if (incremental && !force && skills.length === 0) {
         const fullScanner = new SkillScanner();
-        skills = await fullScanner.scan(skillDirs);
+        const fullResult = await fullScanner.scan(skillDirs);
+        skills = fullResult.skills;
+        errors = fullResult.errors;
     }
     // 保存时间戳
     await store.setLastScanTimestamp(Date.now());
-    return { skills, errors: [], timestamp: Date.now() };
+    return { skills, errors, timestamp: Date.now() };
 }
 /**
  * Parses a SKILL.md file and extracts skill metadata

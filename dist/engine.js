@@ -12,9 +12,11 @@ const cache_1 = require("./cache");
 class Engine {
     constructor(config = {}) {
         this.config = {
-            maxContextSize: config.maxContextSize ?? 1024 * 1024, // 1MB default
+            maxContextSize: config.maxContextSize ?? 100 * 1024, // 100KB default
             maxSteps: config.maxSteps ?? 100,
             skillTimeout: config.skillTimeout ?? 300000, // 5 min default
+            maxRetries: config.maxRetries ?? 0, // no retry by default
+            retryDelayMs: config.retryDelayMs ?? 1000, // 1s default delay
         };
         this.cache = config.cache;
         // Validate config early
@@ -23,6 +25,12 @@ class Engine {
         }
         if (config.maxSteps !== undefined && config.maxSteps <= 0) {
             throw new Error('maxSteps must be positive');
+        }
+        if (config.maxRetries !== undefined && config.maxRetries < 0) {
+            throw new Error('maxRetries must be non-negative');
+        }
+        if (config.retryDelayMs !== undefined && config.retryDelayMs <= 0) {
+            throw new Error('retryDelayMs must be positive');
         }
     }
     /**
@@ -121,59 +129,78 @@ class Engine {
             let stepOutput = undefined;
             let stepError = undefined;
             let stepTokensUsed = 0;
+            let retryCount = 0; // Track retries for step result
             // Execute the skill if not cached
             if (!output) {
                 // Determine timeout: step-level override > combo-level default > engine config
                 const timeout = step.timeout ?? combo.timeout ?? this.config.skillTimeout;
-                try {
-                    // Fix: Cleanup timeout timer to prevent timer leaks
-                    let timeoutId;
-                    const timeoutPromise = new Promise((_, reject) => {
-                        timeoutId = setTimeout(() => reject(new Error(`Skill ${step.skill_id} timed out after ${timeout}ms`)), timeout);
-                    });
+                let lastError;
+                // Retry loop for transient failures
+                while (retryCount <= this.config.maxRetries) {
                     try {
-                        output = await Promise.race([
-                            invoker.invoke(step.skill_id, context),
-                            timeoutPromise
-                        ]);
-                    }
-                    finally {
-                        if (timeoutId !== undefined) {
-                            clearTimeout(timeoutId);
+                        // Fix: Cleanup timeout timer to prevent timer leaks
+                        let timeoutId;
+                        const timeoutPromise = new Promise((_, reject) => {
+                            timeoutId = setTimeout(() => reject(new Error(`Skill ${step.skill_id} timed out after ${timeout}ms`)), timeout);
+                        });
+                        try {
+                            output = await Promise.race([
+                                invoker.invoke(step.skill_id, context),
+                                timeoutPromise
+                            ]);
                         }
+                        finally {
+                            if (timeoutId !== undefined) {
+                                clearTimeout(timeoutId);
+                            }
+                        }
+                        // Store result in cache for future deduplication
+                        if (this.cache && output) {
+                            await this.cache.set(cacheKey, output);
+                        }
+                        // Success - exit retry loop
+                        break;
                     }
-                    // Store result in cache for future deduplication
-                    if (this.cache && output) {
-                        await this.cache.set(cacheKey, output);
+                    catch (err) {
+                        const errorMsg = err instanceof Error ? err.message : String(err);
+                        lastError = `Execution error for ${step.skill_id}: ${errorMsg}`;
+                        // Check if we should retry
+                        if (retryCount < this.config.maxRetries && this.isRetryableError(lastError)) {
+                            retryCount++;
+                            // Wait before retry (except on last attempt)
+                            if (retryCount <= this.config.maxRetries) {
+                                await new Promise(resolve => setTimeout(resolve, this.config.retryDelayMs));
+                                continue;
+                            }
+                        }
+                        // No more retries or non-retryable error - record failure
+                        stepError = lastError;
+                        errors.push(stepError);
+                        const stepEndTime = Date.now();
+                        stepResults.push({
+                            step_id: step.skill_id,
+                            skill_id: step.skill_id,
+                            success: false,
+                            timing: {
+                                start_time: stepStartTime,
+                                end_time: stepEndTime,
+                                duration_ms: stepEndTime - stepStartTime,
+                            },
+                            tokens_used: stepTokensUsed,
+                            output: undefined,
+                            error: stepError,
+                            retry_count: retryCount,
+                        });
+                        return {
+                            success: false,
+                            outputs,
+                            errors,
+                            tokens_used: totalTokens,
+                            duration_ms: totalDuration,
+                            aggregation: 'merge',
+                            steps: stepResults,
+                        };
                     }
-                }
-                catch (err) {
-                    const errorMsg = err instanceof Error ? err.message : String(err);
-                    stepError = `Execution error for ${step.skill_id}: ${errorMsg}`;
-                    errors.push(stepError);
-                    const stepEndTime = Date.now();
-                    stepResults.push({
-                        step_id: step.skill_id,
-                        skill_id: step.skill_id,
-                        success: false,
-                        timing: {
-                            start_time: stepStartTime,
-                            end_time: stepEndTime,
-                            duration_ms: stepEndTime - stepStartTime,
-                        },
-                        tokens_used: stepTokensUsed,
-                        output: undefined,
-                        error: stepError,
-                    });
-                    return {
-                        success: false,
-                        outputs,
-                        errors,
-                        tokens_used: totalTokens,
-                        duration_ms: totalDuration,
-                        aggregation: 'merge',
-                        steps: stepResults,
-                    };
                 }
             }
             // Process output (both cached and fresh)
@@ -202,6 +229,7 @@ class Engine {
                         tokens_used: stepTokensUsed,
                         output: undefined,
                         error: stepError,
+                        retry_count: retryCount,
                     });
                     return {
                         success: false,
@@ -228,6 +256,7 @@ class Engine {
                 tokens_used: stepTokensUsed,
                 output: stepOutput,
                 error: undefined,
+                retry_count: 0,
             });
         }
         return {
@@ -249,6 +278,7 @@ class Engine {
         let totalTokens = 0;
         let totalDuration = 0;
         const outputs = {};
+        const stepResults = [];
         // Check max steps limit
         if (steps.length > this.config.maxSteps) {
             return {
@@ -273,27 +303,60 @@ class Engine {
                 aggregation,
             };
         }
-        // Execute all skills in parallel
-        const startTime = Date.now();
+        // Execute all skills in parallel with per-step timing
+        const parallelStartTime = Date.now();
         // For parallel, each skill gets its own context (from step inputs)
         // In a true parallel execution, skills don't share context until aggregation
-        const results = await Promise.all(steps.map(step => invoker.invoke(step.skill_id, step.inputs || {})));
-        const endTime = Date.now();
-        // Collect results
+        const results = await Promise.all(steps.map(step => this.invokeWithRetry(step.skill_id, step.inputs || {}, invoker, step.timeout ?? this.config.skillTimeout)));
+        const parallelEndTime = Date.now();
+        // Collect results and build step results with timing
         const skillOutputs = [];
-        for (const output of results) {
+        for (let i = 0; i < results.length; i++) {
+            const { output, retryCount } = results[i];
+            const step = steps[i];
             totalTokens += output.tokens_used;
+            // Calculate per-step timing (parallelStartTime is shared, duration from output)
+            const stepStartTime = parallelStartTime;
+            const stepEndTime = parallelStartTime + output.duration_ms;
             if (output.success) {
                 skillOutputs.push(output);
+                stepResults.push({
+                    step_id: step.skill_id,
+                    skill_id: step.skill_id,
+                    success: true,
+                    timing: {
+                        start_time: stepStartTime,
+                        end_time: stepEndTime,
+                        duration_ms: output.duration_ms,
+                    },
+                    tokens_used: output.tokens_used,
+                    output: output.result,
+                    error: undefined,
+                    retry_count: retryCount,
+                });
             }
             else {
                 errors.push(output.error || `Skill ${output.skill_id} failed`);
+                stepResults.push({
+                    step_id: step.skill_id,
+                    skill_id: step.skill_id,
+                    success: false,
+                    timing: {
+                        start_time: stepStartTime,
+                        end_time: stepEndTime,
+                        duration_ms: output.duration_ms,
+                    },
+                    tokens_used: output.tokens_used,
+                    output: undefined,
+                    error: output.error || `Skill ${step.skill_id} failed`,
+                    retry_count: retryCount,
+                });
             }
         }
         // Aggregate outputs
         const { result: aggregatedResult, errors: aggErrors } = this.aggregateOutputs(skillOutputs, aggregation);
         errors.push(...aggErrors);
-        totalDuration = endTime - startTime;
+        totalDuration = parallelEndTime - parallelStartTime;
         return {
             success: errors.length === 0,
             outputs: aggregatedResult,
@@ -301,6 +364,7 @@ class Engine {
             tokens_used: totalTokens,
             duration_ms: totalDuration,
             aggregation,
+            steps: stepResults,
         };
     }
     /**
@@ -473,19 +537,134 @@ class Engine {
         }
     }
     /**
+     * Determine if an error is transient and retryable
+     * Non-retryable: skill not found, skill not available, validation errors
+     * Retryable: timeouts, network errors, temporary failures
+     */
+    isRetryableError(error) {
+        const nonRetryablePatterns = [
+            'not available',
+            'not found',
+            'does not exist',
+            'invalid',
+            'unauthorized',
+            'permission denied',
+            'validation failed',
+        ];
+        const lowerError = error.toLowerCase();
+        return !nonRetryablePatterns.some(pattern => lowerError.includes(pattern));
+    }
+    /**
+     * Invoke a skill with retry logic for transient failures
+     * Returns { output, retryCount } where retryCount is total attempts - 1
+     */
+    async invokeWithRetry(skillId, context, invoker, timeout) {
+        let retryCount = 0;
+        let lastError;
+        while (retryCount <= this.config.maxRetries) {
+            let timeoutId;
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutId = setTimeout(() => reject(new Error(`Skill ${skillId} timed out after ${timeout}ms`)), timeout);
+            });
+            try {
+                const output = await Promise.race([
+                    invoker.invoke(skillId, context),
+                    timeoutPromise
+                ]);
+                return { output, retryCount };
+            }
+            catch (err) {
+                const errorMsg = err instanceof Error ? err.message : String(err);
+                lastError = `Execution error for ${skillId}: ${errorMsg}`;
+                if (retryCount < this.config.maxRetries && this.isRetryableError(lastError)) {
+                    retryCount++;
+                    await new Promise(resolve => setTimeout(resolve, this.config.retryDelayMs));
+                    continue;
+                }
+                // No more retries or non-retryable error - return failure output
+                return {
+                    output: {
+                        skill_id: skillId,
+                        success: false,
+                        result: undefined,
+                        error: lastError,
+                        tokens_used: 0,
+                        duration_ms: 0,
+                    },
+                    retryCount,
+                };
+            }
+            finally {
+                if (timeoutId !== undefined) {
+                    clearTimeout(timeoutId);
+                }
+            }
+        }
+        // Should not reach here, but safety return
+        return {
+            output: {
+                skill_id: skillId,
+                success: false,
+                result: undefined,
+                error: lastError,
+                tokens_used: 0,
+                duration_ms: 0,
+            },
+            retryCount,
+        };
+    }
+    /**
      * Build execution context for a step from previous outputs
      * Follows CONTEXT_KEYS convention: {skillId}.output.{field}
+     * Enforces maxContextSize limit by truncating oldest entries if needed
      */
     buildContext(step, outputs) {
         const context = {};
+        // Collect entries in order (first added = oldest)
+        const entries = [];
         // Add outputs from all previous steps to context
         // Each skill's output is added with its skill_id prefix
         for (const [skillId, output] of Object.entries(outputs)) {
-            context[`${skillId}.output`] = output;
+            entries.push({ key: `${skillId}.output`, value: output });
         }
         // Add step inputs
         if (step.inputs) {
-            context['step.inputs'] = step.inputs;
+            entries.push({ key: 'step.inputs', value: step.inputs });
+        }
+        // Build context and check size
+        for (const entry of entries) {
+            context[entry.key] = entry.value;
+        }
+        // Check context size and truncate if needed - compute size once
+        let contextSize = JSON.stringify(context).length;
+        if (contextSize > this.config.maxContextSize) {
+            // Warn about truncation
+            console.warn(`Engine: Context size ${contextSize} exceeds limit ${this.config.maxContextSize}. ` +
+                `Truncating ${entries.length} entries to fit.`);
+            // Rebuild context with oldest entries truncated first
+            // (first entries in the list are the oldest skill outputs)
+            const skillOutputEntries = entries.filter(e => e.key.endsWith('.output'));
+            const otherEntries = entries.filter(e => !e.key.endsWith('.output'));
+            // Clear context and rebuild
+            const newContext = {};
+            // First add non-skill-output entries (step.inputs, etc.)
+            for (const entry of otherEntries) {
+                newContext[entry.key] = entry.value;
+            }
+            // Then add skill outputs in reverse order (newest first) until we fit
+            const reversedSkillEntries = [...skillOutputEntries].reverse();
+            for (const entry of reversedSkillEntries) {
+                newContext[entry.key] = entry.value;
+                // Check size once after building - not inside loop
+                const newSize = JSON.stringify(newContext).length;
+                if (newSize > this.config.maxContextSize) {
+                    // Too big even with just this one, remove it
+                    delete newContext[entry.key];
+                    break;
+                }
+                contextSize = newSize;
+            }
+            return newContext;
         }
         return context;
     }

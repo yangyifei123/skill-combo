@@ -25,11 +25,13 @@ export class Engine implements IEngine {
   private config: Required<Omit<EngineConfig, 'cache'>>;
   private cache?: Cache;
 
-  constructor(config: EngineConfig = {}) {
+constructor(config: EngineConfig = {}) {
     this.config = {
       maxContextSize: config.maxContextSize ?? 100 * 1024, // 100KB default
       maxSteps: config.maxSteps ?? 100,
       skillTimeout: config.skillTimeout ?? 300000, // 5 min default
+      maxRetries: config.maxRetries ?? 0, // no retry by default
+      retryDelayMs: config.retryDelayMs ?? 1000, // 1s default delay
     };
     this.cache = config.cache;
     // Validate config early
@@ -38,6 +40,12 @@ export class Engine implements IEngine {
     }
     if (config.maxSteps !== undefined && config.maxSteps <= 0) {
       throw new Error('maxSteps must be positive');
+    }
+    if (config.maxRetries !== undefined && config.maxRetries < 0) {
+      throw new Error('maxRetries must be non-negative');
+    }
+    if (config.retryDelayMs !== undefined && config.retryDelayMs <= 0) {
+      throw new Error('retryDelayMs must be positive');
     }
   }
 
@@ -161,61 +169,83 @@ export class Engine implements IEngine {
       let stepOutput: unknown = undefined;
       let stepError: string | undefined = undefined;
       let stepTokensUsed = 0;
+      let retryCount = 0; // Track retries for step result
 
       // Execute the skill if not cached
       if (!output) {
         // Determine timeout: step-level override > combo-level default > engine config
         const timeout = step.timeout ?? combo.timeout ?? this.config.skillTimeout;
+        let lastError: string | undefined;
 
-        try {
-          // Fix: Cleanup timeout timer to prevent timer leaks
-          let timeoutId: ReturnType<typeof setTimeout> | undefined;
-          const timeoutPromise = new Promise<never>((_, reject) => {
-            timeoutId = setTimeout(() => reject(new Error(`Skill ${step.skill_id} timed out after ${timeout}ms`)), timeout);
-          });
-
+        // Retry loop for transient failures
+        while (retryCount <= this.config.maxRetries) {
           try {
-            output = await Promise.race([
-              invoker.invoke(step.skill_id, context),
-              timeoutPromise
-            ]);
-          } finally {
-            if (timeoutId !== undefined) {
-              clearTimeout(timeoutId);
-            }
-          }
+            // Fix: Cleanup timeout timer to prevent timer leaks
+            let timeoutId: ReturnType<typeof setTimeout> | undefined;
+            const timeoutPromise = new Promise<never>((_, reject) => {
+              timeoutId = setTimeout(() => reject(new Error(`Skill ${step.skill_id} timed out after ${timeout}ms`)), timeout);
+            });
 
-          // Store result in cache for future deduplication
-          if (this.cache && output) {
-            await this.cache.set(cacheKey, output);
+            try {
+              output = await Promise.race([
+                invoker.invoke(step.skill_id, context),
+                timeoutPromise
+              ]);
+            } finally {
+              if (timeoutId !== undefined) {
+                clearTimeout(timeoutId);
+              }
+            }
+
+            // Store result in cache for future deduplication
+            if (this.cache && output) {
+              await this.cache.set(cacheKey, output);
+            }
+
+            // Success - exit retry loop
+            break;
+          } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            lastError = `Execution error for ${step.skill_id}: ${errorMsg}`;
+
+            // Check if we should retry
+            if (retryCount < this.config.maxRetries && this.isRetryableError(lastError)) {
+              retryCount++;
+              // Wait before retry (except on last attempt)
+              if (retryCount <= this.config.maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, this.config.retryDelayMs));
+                continue;
+              }
+            }
+
+            // No more retries or non-retryable error - record failure
+            stepError = lastError;
+            errors.push(stepError);
+            const stepEndTime = Date.now();
+            stepResults.push({
+              step_id: step.skill_id,
+              skill_id: step.skill_id,
+              success: false,
+              timing: {
+                start_time: stepStartTime,
+                end_time: stepEndTime,
+                duration_ms: stepEndTime - stepStartTime,
+              },
+              tokens_used: stepTokensUsed,
+              output: undefined,
+              error: stepError,
+              retry_count: retryCount,
+            });
+            return {
+              success: false,
+              outputs,
+              errors,
+              tokens_used: totalTokens,
+              duration_ms: totalDuration,
+              aggregation: 'merge',
+              steps: stepResults,
+            };
           }
-        } catch (err) {
-          const errorMsg = err instanceof Error ? err.message : String(err);
-          stepError = `Execution error for ${step.skill_id}: ${errorMsg}`;
-          errors.push(stepError);
-          const stepEndTime = Date.now();
-          stepResults.push({
-            step_id: step.skill_id,
-            skill_id: step.skill_id,
-            success: false,
-            timing: {
-              start_time: stepStartTime,
-              end_time: stepEndTime,
-              duration_ms: stepEndTime - stepStartTime,
-            },
-            tokens_used: stepTokensUsed,
-            output: undefined,
-            error: stepError,
-          });
-          return {
-            success: false,
-            outputs,
-            errors,
-            tokens_used: totalTokens,
-            duration_ms: totalDuration,
-            aggregation: 'merge',
-            steps: stepResults,
-          };
         }
       }
 
@@ -245,6 +275,7 @@ export class Engine implements IEngine {
             tokens_used: stepTokensUsed,
             output: undefined,
             error: stepError,
+            retry_count: retryCount,
           });
           return {
             success: false,
@@ -272,6 +303,7 @@ export class Engine implements IEngine {
         tokens_used: stepTokensUsed,
         output: stepOutput,
         error: undefined,
+        retry_count: 0,
       });
     }
 
@@ -335,14 +367,19 @@ export class Engine implements IEngine {
     // For parallel, each skill gets its own context (from step inputs)
     // In a true parallel execution, skills don't share context until aggregation
     const results = await Promise.all(
-      steps.map(step => invoker.invoke(step.skill_id, step.inputs || {}))
+      steps.map(step => this.invokeWithRetry(
+        step.skill_id,
+        step.inputs || {},
+        invoker,
+        step.timeout ?? this.config.skillTimeout
+      ))
     );
     const parallelEndTime = Date.now();
 
     // Collect results and build step results with timing
     const skillOutputs: SkillOutput[] = [];
     for (let i = 0; i < results.length; i++) {
-      const output = results[i];
+      const { output, retryCount } = results[i];
       const step = steps[i];
       totalTokens += output.tokens_used;
 
@@ -364,6 +401,7 @@ export class Engine implements IEngine {
           tokens_used: output.tokens_used,
           output: output.result,
           error: undefined,
+          retry_count: retryCount,
         });
       } else {
         errors.push(output.error || `Skill ${output.skill_id} failed`);
@@ -379,6 +417,7 @@ export class Engine implements IEngine {
           tokens_used: output.tokens_used,
           output: undefined,
           error: output.error || `Skill ${step.skill_id} failed`,
+          retry_count: retryCount,
         });
       }
     }
@@ -608,6 +647,93 @@ export class Engine implements IEngine {
           `Condition type "${condition.type}" requires security model for safe JS evaluation`
         );
     }
+  }
+
+  /**
+   * Determine if an error is transient and retryable
+   * Non-retryable: skill not found, skill not available, validation errors
+   * Retryable: timeouts, network errors, temporary failures
+   */
+  private isRetryableError(error: string): boolean {
+    const nonRetryablePatterns = [
+      'not available',
+      'not found',
+      'does not exist',
+      'invalid',
+      'unauthorized',
+      'permission denied',
+      'validation failed',
+    ];
+    const lowerError = error.toLowerCase();
+    return !nonRetryablePatterns.some(pattern => lowerError.includes(pattern));
+  }
+
+  /**
+   * Invoke a skill with retry logic for transient failures
+   * Returns { output, retryCount } where retryCount is total attempts - 1
+   */
+  private async invokeWithRetry(
+    skillId: string,
+    context: SkillContext,
+    invoker: SkillInvoker,
+    timeout: number
+  ): Promise<{ output: SkillOutput; retryCount: number }> {
+    let retryCount = 0;
+    let lastError: string | undefined;
+
+    while (retryCount <= this.config.maxRetries) {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(`Skill ${skillId} timed out after ${timeout}ms`)), timeout);
+      });
+
+      try {
+        const output = await Promise.race([
+          invoker.invoke(skillId, context),
+          timeoutPromise
+        ]);
+        return { output, retryCount };
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        lastError = `Execution error for ${skillId}: ${errorMsg}`;
+
+        if (retryCount < this.config.maxRetries && this.isRetryableError(lastError)) {
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, this.config.retryDelayMs));
+          continue;
+        }
+
+        // No more retries or non-retryable error - return failure output
+        return {
+          output: {
+            skill_id: skillId,
+            success: false,
+            result: undefined,
+            error: lastError,
+            tokens_used: 0,
+            duration_ms: 0,
+          },
+          retryCount,
+        };
+      } finally {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+        }
+      }
+    }
+
+    // Should not reach here, but safety return
+    return {
+      output: {
+        skill_id: skillId,
+        success: false,
+        result: undefined,
+        error: lastError,
+        tokens_used: 0,
+        duration_ms: 0,
+      },
+      retryCount,
+    };
   }
 
   /**

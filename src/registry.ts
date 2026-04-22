@@ -176,7 +176,7 @@ export class Registry implements IRegistry {
     }
 
     // Validate execution mode
-    const validExecutions: ExecutionMode[] = ['serial', 'parallel'];
+    const validExecutions: ExecutionMode[] = ['serial', 'parallel', 'interleaved'];
     if (!combo.execution || !validExecutions.includes(combo.execution)) {
       errors.push({
         field: 'execution',

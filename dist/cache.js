@@ -7,20 +7,22 @@ exports.computeCacheKey = computeCacheKey;
 class MemoryCache {
     constructor(ttl) {
         this.store = new Map();
-        this.ttl = ttl;
+        this.defaultTtl = ttl;
     }
     async get(key) {
         const entry = this.store.get(key);
         if (!entry)
             return undefined;
-        if (this.ttl && Date.now() - entry.timestamp > this.ttl) {
+        // Per-entry TTL overrides default TTL; if neither set, entry never expires
+        const effectiveTtl = entry.ttlMs ?? this.defaultTtl;
+        if (effectiveTtl && Date.now() - entry.timestamp > effectiveTtl) {
             this.store.delete(key);
             return undefined;
         }
         return entry.value;
     }
-    async set(key, value) {
-        this.store.set(key, { value, timestamp: Date.now() });
+    async set(key, value, ttlMs) {
+        this.store.set(key, { value, timestamp: Date.now(), ttlMs });
     }
     async has(key) {
         const result = await this.get(key);

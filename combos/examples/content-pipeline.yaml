@@ -1,8 +1,0 @@
-name: content-pipeline
-description: "Content creation pipeline: strategy planning, SEO content writing, and persuasive copywriting"
-type: chain
-execution: serial
-skills:
-  - content-strategy
-  - seo-content-writer
-  - copywriting

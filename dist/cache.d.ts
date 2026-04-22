@@ -2,10 +2,10 @@ import { Cache } from './types';
 export { Cache } from './types';
 export declare class MemoryCache implements Cache {
     private store;
-    private ttl?;
+    private defaultTtl?;
     constructor(ttl?: number);
     get(key: string): Promise<unknown | undefined>;
-    set(key: string, value: unknown): Promise<void>;
+    set(key: string, value: unknown, ttlMs?: number): Promise<void>;
     has(key: string): Promise<boolean>;
     clear(): Promise<void>;
 }

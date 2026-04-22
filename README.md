@@ -1,15 +1,27 @@
 # Skill-Combo Plugin
 
-**Version**: 0.1.0
+**Version**: 1.0.0
 **Type**: OpenCode Plugin
 **Description**: Skill orchestration framework that chains multiple skills together like fighting game combos, enabling serial, parallel, and composite skill execution for token efficiency.
 
+## Quick Start
+
+```bash
+npm install && npm run build
+node dist/cli.js scan --save
+node dist/cli.js combos --validate
+node dist/cli.js run frontend-dev --dry-run
+```
+
 ## Features
 
-- **Skill Discovery**: Scans and indexes all skills from OpenCode skill directories
-- **Skill Registry**: Central catalog with query capabilities (by category, capability, input, output)
-- **Combo Engine**: Execute skill chains serially with shared context
-- **CLI**: Scan, list, and run skill combos from command line
+- **Scanner with Fallback**: Incremental scan auto-falls back to full scan if no skills found
+- **Registry Persistence**: Scan results saved to `.skill-combo-registry.json` with `--save`
+- **10 Pre-configured Combos**: Ready-to-use skill chains for common workflows
+- **JSON Output**: Machine-readable output with `--json` flag
+- **Error Recovery**: Automatic retry with configurable delay for transient failures
+- **Cache with TTL**: Per-entry TTL support for deduplicating skill results
+- **Combo Validation**: `--validate` flag checks skill availability
 
 ## Installation
 
@@ -21,81 +33,29 @@ cp -r skill-combo ~/.config/opencode/skills/
 ln -s $(pwd)/skill-combo ~/.config/opencode/skills/skill-combo
 ```
 
-## Usage
-
-### CLI Commands
+## CLI Commands
 
 ```bash
-# Scan and index all skills
-skill-combo scan
-
-# List discovered skills
-skill-combo list
-
-# List registered combos
-skill-combo combos
+skill-combo scan [--save] [--json]     # Scan and index skills
+skill-combo list [--json]              # List discovered skills
+skill-combo combos [--json] [--validate]  # List/validate combos
+skill-combo run <name> [--dry-run] [--json] [--verbose]  # Execute a combo
 ```
 
-### As a Module
+## Available Combos
 
-```typescript
-import { CLI, Engine, Planner, Registry, scanSkills } from 'skill-combo';
-
-// Create CLI instance
-const cli = new CLI();
-
-// Scan for skills
-const { skills, errors } = await cli.scan();
-
-// List all skills
-const { skills: allSkills } = cli.listSkills();
-
-// Create and execute a combo
-const combo = {
-  name: 'research-write',
-  description: 'Research then write report',
-  type: 'chain',
-  execution: 'serial',
-  skills: ['market-research-1.0.0', 'seo-content-writer'],
-};
-
-const planner = cli.getPlanner();
-const engine = cli.getEngine();
-const invoker = new DefaultInvoker();
-
-const plan = planner.plan(combo, []);
-const result = await engine.execute(combo, plan, invoker);
-```
-
-## Combo Types
-
-| Type | Description |
-|------|-------------|
-| `chain` | Skills chained - output feeds to next ✅ |
-| `parallel` | Skills run independently ✅ |
-| `wrap` | Wrapper skill around sub-combo ✅ |
-| `conditional` | Branch based on condition ✅ |
-
-## Execution Modes
-
-| Mode | Description |
-|------|-------------|
-| `serial` | One skill after another ✅ |
-| `parallel` | Multiple skills simultaneously ✅ |
-| `interleaved` | Control alternates at yield points (in development) |
-
-## Configuration
-
-```yaml
-# config/default-combos.yaml
-combos:
-  - name: research-report
-    type: chain
-    execution: serial
-    skills:
-      - market-research-1.0.0
-      - seo-content-writer
-```
+| Combo | Type | Skills |
+|-------|------|--------|
+| `frontend-dev` | chain | frontend-design → ts-react-nextjs |
+| `frontend-vue` | chain | frontend-design → ts-vue-svelte |
+| `api-first` | chain | api-rest-design → python-patterns → testing-strategies |
+| `deploy-pipeline` | chain | testing-strategies → docker-patterns → kubernetes-patterns |
+| `code-review-partial` | parallel | performance-optimization, testing-strategies |
+| `skill-audit` | parallel | skill-creator, skill-judge |
+| `docs-pipeline` | chain | code-docs → project-docs |
+| `git-workflow` | chain | git-commit → git-release |
+| `content-creation` | chain | content-research-writer → humanizer |
+| `research-report` | chain | content-research-writer → humanizer |
 
 ## Architecture
 
@@ -105,28 +65,21 @@ combos:
 ├─────────────────────────────────────────────┤
 │  Scanner    │  Registry   │  Engine        │
 │  - Discover │  - Store    │  - Serial     │
-│  - Index    │  - Query    │  - Parallel*   │
-│  - Profile  │             │  - Interleaved* │
+│  - Index    │  - Query    │  - Parallel   │
+│  - Fallback │  - Persist  │  - Retry       │
 ├─────────────────────────────────────────────┤
-│  Planner    │  CLI        │  Invoker      │
-│  - Sequence │  - scan     │  - OpenCode*  │
-│  - Optimize │  - list     │  - Mock       │
-│              │  - run      │               │
+│  Planner    │  CLI        │  Cache/TTL    │
+│  - Sequence │  - scan     │  - Dedup      │
+│  - Optimize │  - run      │  - Expiry     │
 └─────────────────────────────────────────────┘
-* = In development
 ```
 
 ## Development
 
 ```bash
-# Install dependencies
 npm install
-
-# Run tests
-npm test
-
-# Type check
 npm run build
+npm test
 ```
 
 ## License

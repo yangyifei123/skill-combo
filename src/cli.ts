@@ -1,6 +1,8 @@
 // CLI - Command line interface for skill-combo
 // MVP: scan, list, and run commands
 
+import * as fs from 'fs';
+import * as path from 'path';
 import { Engine } from './engine';
 import { loadDefaultCombos } from './combo-loader';
 import { Planner } from './planner';
@@ -8,6 +10,8 @@ import { Registry } from './registry';
 import { scanSkills } from './scanner';
 import { SkillInvoker, SkillContext, SkillOutput } from './types';
 import { success, error, warning, colorize } from './colors';
+
+const REGISTRY_FILE = '.skill-combo-registry.json';
 
 /**
  * CLI configuration options
@@ -92,12 +96,80 @@ export class CLI {
     } catch (e) {
       // Silently ignore if combo loading fails (e.g., not in Node.js context)
     }
+
+    // Auto-load registry snapshot if exists
+    this.loadRegistry();
+  }
+
+  /**
+   * Save registry snapshot to disk
+   */
+  saveRegistry(): boolean {
+    try {
+      const skills = this.registry.getAllSkills();
+      const combos = this.registry.listCombos();
+      const snapshot = {
+        skills,
+        combos,
+        timestamp: Date.now(),
+      };
+      const filePath = path.join(process.cwd(), REGISTRY_FILE);
+      fs.writeFileSync(filePath, JSON.stringify(snapshot, null, 2), 'utf-8');
+      return true;
+    } catch (e) {
+      if (this.isDebug()) {
+        console.debug(`[DEBUG] Failed to save registry: ${e}`);
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Load registry snapshot from disk if exists
+   */
+  loadRegistry(): boolean {
+    try {
+      const filePath = path.join(process.cwd(), REGISTRY_FILE);
+      if (!fs.existsSync(filePath)) {
+        return false;
+      }
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const snapshot = JSON.parse(content);
+
+      // Load skills
+      if (snapshot.skills && Array.isArray(snapshot.skills)) {
+        for (const skill of snapshot.skills) {
+          this.registry.addSkill(skill);
+        }
+      }
+
+      // Load combos
+      if (snapshot.combos && Array.isArray(snapshot.combos)) {
+        for (const combo of snapshot.combos) {
+          this.registry.addCombo(combo);
+        }
+      }
+
+      // Restore last scan timestamp
+      if (snapshot.timestamp) {
+        this.registry.updateScanTimestamp();
+      }
+
+      return true;
+    } catch (e) {
+      if (this.isDebug()) {
+        console.debug(`[DEBUG] Failed to load registry: ${e}`);
+      }
+      return false;
+    }
   }
 
   /**
    * Scan skill directories and populate registry
+   * @param save If true, save registry snapshot to disk
+   * @param fullResult If true, return full scan result instead of just counts
    */
-  async scan(): Promise<{ skills: number; errors: number }> {
+  async scan(save?: boolean, fullResult: boolean = false): Promise<{ skills: number; errors: number } | { skills: any[]; errors: any[]; timestamp: number }> {
     const scanResult = await scanSkills();
 
     // Populate registry with discovered skills
@@ -107,6 +179,19 @@ export class CLI {
 
     // Update scan timestamp
     this.registry.updateScanTimestamp();
+
+    // Optionally save registry snapshot
+    if (save) {
+      this.saveRegistry();
+    }
+
+    if (fullResult) {
+      return {
+        skills: scanResult.skills,
+        errors: scanResult.errors,
+        timestamp: scanResult.timestamp,
+      };
+    }
 
     return {
       skills: scanResult.skills.length,
@@ -342,9 +427,9 @@ skill-combo CLI
 
 Commands:
   scan      - Scan skill directories and index skills
-  list      - List all discovered skills
+  list      - List all discovered skills (auto-loads registry)
   combos    - List all registered combos
-  run       - Execute a combo by name
+  run       - Execute a combo by name (auto-loads registry)
   help      - Show this help message
 
 Use 'skill-combo help <command>' for detailed help on a specific command.
@@ -353,6 +438,8 @@ Options:
   --debug   - Enable debug mode (also enabled via DEBUG=1 environment variable)
   --dry-run - Show execution plan without actually executing skills
   --verbose - Show detailed execution statistics (token usage and timing per step)
+  --save    - Save registry snapshot to disk (for scan command)
+  --json    - Output results as machine-readable JSON (single line)
 `);
   }
 
@@ -364,17 +451,25 @@ Options:
 skill-combo scan - Scan skill directories and index skills
 
 Usage:
-  skill-combo scan
+  skill-combo scan [--save] [--json]
+
+Options:
+  --save    Save registry snapshot to .skill-combo-registry.json
+  --json    Output results as machine-readable JSON (single line)
 
 Description:
   Scans the OpenCode skills directories to discover and index all available skills.
   The scan results are stored in the registry and can be accessed using the 'list' command.
+  Use --save to persist the registry for auto-loading by list and run commands.
 
 Examples:
   skill-combo scan
+  skill-combo scan --save
+  skill-combo scan --json
 
 Output:
   Shows the number of skills found and any errors encountered during scanning.
+  With --json: { "skills": [...], "errors": [...], "timestamp": number }
 `);
   }
 
@@ -395,12 +490,14 @@ Options:
   --debug       Enable debug mode with detailed execution information
   --dry-run     Show execution plan without actually executing skills
   --verbose     Show detailed execution statistics (token usage and timing per step)
+  --json        Output full RunResult as machine-readable JSON (single line)
 
 Examples:
   skill-combo run research-report
   skill-combo run my-combo --debug
   skill-combo run my-combo --dry-run
   skill-combo run my-combo --verbose
+  skill-combo run my-combo --json
 
 Description:
   Executes a registered combo by name. The combo must be registered in the system
@@ -417,6 +514,10 @@ Dry-Run Mode:
 Verbose Mode:
   When --verbose is enabled, detailed statistics including token usage and
   execution time per step are shown after execution completes.
+
+JSON Mode:
+  When --json is enabled, the full RunResult is output as a single-line JSON object,
+  suitable for machine parsing and integration with other tools.
 `);
   }
 
@@ -428,7 +529,10 @@ Verbose Mode:
 skill-combo list - List all discovered skills
 
 Usage:
-  skill-combo list
+  skill-combo list [--json]
+
+Options:
+  --json    Output results as machine-readable JSON (single line)
 
 Description:
   Lists all skills that have been discovered by the scan command.
@@ -436,9 +540,11 @@ Description:
 
 Examples:
   skill-combo list
+  skill-combo list --json
 
 Output:
   Shows the total count of skills and lists each skill with its ID and description.
+  With --json: { "skills": [...], "count": number }
 `);
   }
 
@@ -450,7 +556,10 @@ Output:
 skill-combo combos - List all registered combos
 
 Usage:
-  skill-combo combos
+  skill-combo combos [--json]
+
+Options:
+  --json    Output results as machine-readable JSON (single line)
 
 Description:
   Lists all combo definitions that are registered in the system.
@@ -458,10 +567,12 @@ Description:
 
 Examples:
   skill-combo combos
+  skill-combo combos --json
 
 Output:
   Shows the total count of combos and lists each combo with its name, type,
   execution mode, and the skill chain it contains.
+  With --json: { "combos": [...], "count": number }
 `);
   }
 }
@@ -498,26 +609,85 @@ export async function main(args: string[]): Promise<void> {
 
   switch (command) {
     case 'scan': {
-      const result = await cli.scan();
-      console.log(colorize(`Scan complete: ${result.skills} skills found, ${result.errors} errors`, result.errors > 0 ? warning : success));
+      // Parse flags for scan command
+      const rawFlags = args.slice(1).filter(a => a.startsWith('--'));
+      const flags = rawFlags.map(f => {
+        const eqIdx = f.indexOf('=');
+        return eqIdx === -1 ? f : f.substring(0, eqIdx);
+      });
+      const save = flags.includes('--save');
+      const jsonOutput = flags.includes('--json');
+
+      if (jsonOutput) {
+        const result = await cli.scan(save, true) as { skills: any[]; errors: any[]; timestamp: number };
+        console.log(JSON.stringify({ skills: result.skills, errors: result.errors, timestamp: result.timestamp }));
+      } else {
+        const result = await cli.scan(save) as { skills: number; errors: number };
+        console.log(colorize(`Scan complete: ${result.skills} skills found, ${result.errors} errors`, result.errors > 0 ? warning : success));
+      }
       break;
     }
 
     case 'list': {
-      const result = cli.listSkills();
-      console.log(`Found ${result.count} skills:`);
-      result.skills.forEach(s => {
-        console.log(`  - ${s.id}: ${s.description}`);
+      const rawFlags = args.slice(1).filter(a => a.startsWith('--'));
+      const flags = rawFlags.map(f => {
+        const eqIdx = f.indexOf('=');
+        return eqIdx === -1 ? f : f.substring(0, eqIdx);
       });
+      const jsonOutput = flags.includes('--json');
+
+      const result = cli.listSkills();
+      if (jsonOutput) {
+        console.log(JSON.stringify({ skills: result.skills, count: result.count }));
+      } else {
+        console.log(`Found ${result.count} skills:`);
+        result.skills.forEach(s => {
+          console.log(`  - ${s.id}: ${s.description}`);
+        });
+      }
       break;
     }
 
     case 'combos': {
-      const result = cli.listCombos();
-      console.log(`Found ${result.count} combos:`);
-      result.combos.forEach(c => {
-        console.log(`  - ${c.name} (${c.type}/${c.execution}): ${c.skills.join(' -> ')}`);
+      const rawFlags = args.slice(1).filter(a => a.startsWith('--'));
+      const flags = rawFlags.map(f => {
+        const eqIdx = f.indexOf('=');
+        return eqIdx === -1 ? f : f.substring(0, eqIdx);
       });
+      const jsonOutput = flags.includes('--json');
+      const validate = flags.includes('--validate');
+
+      const result = cli.listCombos();
+
+      if (validate) {
+        // Validate each combo's skills exist in registry
+        let hasErrors = false;
+        const registry = cli.getRegistry();
+
+        for (const combo of result.combos) {
+          const missing = registry.validateComboSkills(combo);
+          if (missing.length === 0) {
+            console.log(colorize(`✓ ${combo.name}`, success));
+          } else {
+            console.log(colorize(`✗ ${combo.name}: missing ${missing.join(', ')}`, error));
+            hasErrors = true;
+          }
+        }
+
+        if (hasErrors) {
+          process.exit(1);
+        }
+        break;
+      }
+
+      if (jsonOutput) {
+        console.log(JSON.stringify({ combos: result.combos, count: result.count }));
+      } else {
+        console.log(`Found ${result.count} combos:`);
+        result.combos.forEach(c => {
+          console.log(`  - ${c.name} (${c.type}/${c.execution}): ${c.skills.join(' -> ')}`);
+        });
+      }
       break;
     }
 
@@ -534,6 +704,7 @@ export async function main(args: string[]): Promise<void> {
       const debug = flags.includes('--debug');
       const dryRun = flags.includes('--dry-run');
       const verbose = flags.includes('--verbose');
+      const jsonOutput = flags.includes('--json');
       const config: CLIConfig = { debug, verbose };
 
       if (debug) {
@@ -541,7 +712,7 @@ export async function main(args: string[]): Promise<void> {
       }
 
       if (!comboName) {
-        console.error('Usage: skill-combo run <combo-name> [--debug] [--dry-run] [--verbose]');
+        console.error('Usage: skill-combo run <combo-name> [--debug] [--dry-run] [--verbose] [--json]');
         process.exit(1);
       }
 
@@ -552,13 +723,16 @@ export async function main(args: string[]): Promise<void> {
       // Validate combo exists before execution
       const combo = debugCli.getRegistry().getCombo(comboName);
       if (!combo) {
-        const availableCombos = debugCli.listCombos();
+        if (jsonOutput) {
+          console.log(JSON.stringify({ success: false, outputs: {}, errors: [`Combo not found: ${comboName}`] }));
+          process.exit(1);
+        }
         console.error(colorize(`✗ Combo not found: ${comboName}`, error));
         console.error('Available combos:');
-        if (availableCombos.count === 0) {
+        if (debugCli.listCombos().count === 0) {
           console.error('  (none - no combos registered)');
         } else {
-          availableCombos.combos.forEach(c => {
+          debugCli.listCombos().combos.forEach(c => {
             console.error(`  - ${c.name}`);
           });
         }
@@ -566,6 +740,11 @@ export async function main(args: string[]): Promise<void> {
       }
 
       const result = await debugCli.runCombo(comboName, invoker, undefined, dryRun);
+
+      if (jsonOutput) {
+        console.log(JSON.stringify(result));
+        return;
+      }
 
       if (result.dryRun) {
         // Dry-run completed - plan was displayed, exit cleanly

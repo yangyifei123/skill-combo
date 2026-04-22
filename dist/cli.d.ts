@@ -45,11 +45,25 @@ export declare class CLI {
     private config;
     constructor(config?: CLIConfig);
     /**
-     * Scan skill directories and populate registry
+     * Save registry snapshot to disk
      */
-    scan(): Promise<{
+    saveRegistry(): boolean;
+    /**
+     * Load registry snapshot from disk if exists
+     */
+    loadRegistry(): boolean;
+    /**
+     * Scan skill directories and populate registry
+     * @param save If true, save registry snapshot to disk
+     * @param fullResult If true, return full scan result instead of just counts
+     */
+    scan(save?: boolean, fullResult?: boolean): Promise<{
         skills: number;
         errors: number;
+    } | {
+        skills: any[];
+        errors: any[];
+        timestamp: number;
     }>;
     /**
      * List all discovered skills

@@ -1,7 +1,0 @@
-name: skill-audit
-description: "Audit a skill's quality: evaluate skill design and judge quality in parallel"
-type: parallel
-execution: parallel
-skills:
-  - skill-creator
-  - skill-judge

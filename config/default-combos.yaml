@@ -1,23 +1,7 @@
-# Default Combos
-# Pre-configured skill combinations for common tasks
+# Default Combos - v1.0.0
+# All skill IDs verified against scan results (103 skills)
 
 combos:
-  - name: research-report
-    description: "Market research followed by SEO content writing"
-    type: chain
-    execution: serial
-    skills:
-      - market-research-1.0.0
-      - seo-content-writer
-
-  - name: code-review-full
-    description: "Full code review with security and performance checks"
-    type: parallel
-    execution: parallel
-    skills:
-      - security-auditor
-      - performance-optimization
-
   - name: frontend-dev
     description: "Frontend design to implementation pipeline"
     type: chain
@@ -26,14 +10,13 @@ combos:
       - frontend-design
       - ts-react-nextjs
 
-  - name: full-stack-review
-    description: "Full application review pipeline: security audit, performance optimization, and testing strategies"
+  - name: frontend-vue
+    description: "Vue frontend pipeline: UI/UX design followed by TypeScript and Vue/Svelte implementation"
     type: chain
     execution: serial
     skills:
-      - security-auditor
-      - performance-optimization
-      - testing-strategies
+      - frontend-design
+      - ts-vue-svelte
 
   - name: api-first
     description: "API design to implementation: RESTful API design, Python patterns, and testing strategies"
@@ -44,14 +27,6 @@ combos:
       - python-patterns
       - testing-strategies
 
-  - name: frontend-vue
-    description: "Vue frontend pipeline: UI/UX design followed by TypeScript and Vue/Svelte implementation"
-    type: chain
-    execution: serial
-    skills:
-      - frontend-design
-      - ts-vue-svelte
-
   - name: deploy-pipeline
     description: "Full deployment pipeline: testing strategies, containerization with Docker, and Kubernetes deployment"
     type: chain
@@ -61,14 +36,13 @@ combos:
       - docker-patterns
       - kubernetes-patterns
 
-  - name: content-pipeline
-    description: "Content creation pipeline: strategy planning, SEO content writing, and persuasive copywriting"
-    type: chain
-    execution: serial
+  - name: code-review-partial
+    description: "Code review with performance checks (security auditor skill not available in base registry)"
+    type: parallel
+    execution: parallel
     skills:
-      - content-strategy
-      - seo-content-writer
-      - copywriting
+      - performance-optimization
+      - testing-strategies
 
   - name: skill-audit
     description: "Audit a skill's quality: evaluate skill design and judge quality in parallel"
@@ -77,3 +51,27 @@ combos:
     skills:
       - skill-creator
       - skill-judge
+
+  - name: docs-pipeline
+    description: "Documentation creation pipeline: code docs followed by project docs"
+    type: chain
+    execution: serial
+    skills:
+      - code-docs
+      - project-docs
+
+  - name: git-workflow
+    description: "Git workflow: commit message generation followed by release preparation"
+    type: chain
+    execution: serial
+    skills:
+      - git-commit
+      - git-release
+
+  - name: content-creation
+    description: "Content creation with research and writing"
+    type: chain
+    execution: serial
+    skills:
+      - content-research-writer
+      - humanizer

@@ -4,6 +4,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OpenCodeInvoker = void 0;
 exports.createOpenCodeInvoker = createOpenCodeInvoker;
+const cli_1 = require("./cli");
 /**
  * OpenCodeInvoker - Real skill invoker that uses OpenCode runtime
  *
@@ -114,18 +115,24 @@ exports.OpenCodeInvoker = OpenCodeInvoker;
 /**
  * Create an OpenCodeInvoker from global OpenCode context
  * This function should be called when loading the plugin in OpenCode runtime
+ *
+ * @returns OpenCodeInvoker if running in OpenCode runtime with skill() available,
+ *          otherwise returns DefaultInvoker with a warning
  */
 function createOpenCodeInvoker() {
     // Access OpenCode's global skill tool
     // In OpenCode runtime, skill() is available globally
     const skillTool = globalThis.skill;
-    if (!skillTool) {
-        throw new Error('OpenCode skill tool not found. Ensure skill-combo is loaded in OpenCode runtime.');
+    if (skillTool) {
+        return new OpenCodeInvoker({
+            skillTool,
+            sessionId: globalThis.session?.id || 'default',
+            timeout: 300000,
+        });
     }
-    return new OpenCodeInvoker({
-        skillTool,
-        sessionId: globalThis.session?.id || 'default',
-        timeout: 300000,
-    });
+    // Fallback: not in OpenCode runtime
+    console.warn('[skill-combo] Warning: OpenCode runtime not detected. Using DefaultInvoker (mock execution). ' +
+        'To use real skill execution, load skill-combo as an OpenCode plugin.');
+    return new cli_1.DefaultInvoker();
 }
 //# sourceMappingURL=opencode-invoker.js.map

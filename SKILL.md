@@ -228,6 +228,30 @@ await skill({ name: 'skill-combo', user_message: 'run frontend-dev' });
 
 Chains `frontend-design` → `ts-react-nextjs` for design-to-code workflow.
 
+## Creating Combos
+
+Create combos as YAML files in `combos/examples/`:
+
+```yaml
+name: my-combo              # Unique identifier
+description: Research then write  # One-liner
+type: chain                 # chain|parallel|wrap|conditional
+execution: serial           # serial|parallel
+skills:                     # Ordered list of skill names
+  - market-research-1.0.0
+  - seo-content-writer
+```
+
+**Validate** before using:
+```bash
+skill-combo combos --validate
+```
+
+**Dry-run** to preview:
+```bash
+skill-combo run my-combo --dry-run
+```
+
 ## Anti-Patterns
 
 NEVER use skill-combo when:
@@ -250,11 +274,38 @@ NEVER use parallel execution when:
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | `scan` finds 0 skills | Stale timestamp file | Delete `.skill-combo-scan-timestamp` and re-scan |
-| `list` returns 0 skills | Registry not persisted between CLI invocations | Use programmatic API or run scan+list in same process |
+| `list` returns 0 skills | Registry not persisted | Run `scan --save` first, then `list` auto-loads |
 | `run` fails: combo not found | Combo name typo or not loaded | Run `combos` to list available names |
-| `run` fails: skill not found | Skill missing from registry | Run `scan` first to discover skills |
+| `run` fails: skill not found | Skill missing from registry | Run `scan --save` first |
 | Timeout during execution | Skill takes too long | Use `--verbose` to identify slow skill, increase timeout |
 | Context missing between steps | Previous skill returned no output | Check previous skill's success status with `--verbose` |
+| Transient failure (network) | Skill invocation failed temporarily | Configure `maxRetries` in EngineConfig |
+
+## Advanced Features
+
+### Persistence (`--save`)
+```bash
+skill-combo scan --save   # Save 103 skills to .skill-combo-registry.json
+skill-combo list          # Auto-loads from saved registry
+skill-combo run my-combo  # Auto-loads skills and combos
+```
+
+### Machine-Readable Output (`--json`)
+```bash
+skill-combo scan --json    # {"skills":[...],"errors":[],"timestamp":...}
+skill-combo combos --json  # {"combos":[...],"count":9}
+```
+
+### Error Recovery (retry)
+Engine supports automatic retry for transient failures:
+- `maxRetries`: number of retry attempts (default: 0, no retry)
+- `retryDelayMs`: delay between retries (default: 1000)
+- Non-transient errors (skill not found) are never retried
+
+### Cache TTL
+Skills cache supports per-entry TTL:
+- `cache.set(key, value, ttlMs?)` - expires after ttlMs milliseconds
+- Instance-level default TTL via constructor
 
 ## Runtime Requirements
 

@@ -6,25 +6,27 @@ import { Cache } from './types';
 export { Cache } from './types';
 
 export class MemoryCache implements Cache {
-  private store = new Map<string, { value: unknown; timestamp: number }>();
-  private ttl?: number;
+  private store = new Map<string, { value: unknown; timestamp: number; ttlMs?: number }>();
+  private defaultTtl?: number;
 
   constructor(ttl?: number) {
-    this.ttl = ttl;
+    this.defaultTtl = ttl;
   }
 
   async get(key: string): Promise<unknown | undefined> {
     const entry = this.store.get(key);
     if (!entry) return undefined;
-    if (this.ttl && Date.now() - entry.timestamp > this.ttl) {
+    // Per-entry TTL overrides default TTL; if neither set, entry never expires
+    const effectiveTtl = entry.ttlMs ?? this.defaultTtl;
+    if (effectiveTtl && Date.now() - entry.timestamp > effectiveTtl) {
       this.store.delete(key);
       return undefined;
     }
     return entry.value;
   }
 
-  async set(key: string, value: unknown): Promise<void> {
-    this.store.set(key, { value, timestamp: Date.now() });
+  async set(key: string, value: unknown, ttlMs?: number): Promise<void> {
+    this.store.set(key, { value, timestamp: Date.now(), ttlMs });
   }
 
   async has(key: string): Promise<boolean> {

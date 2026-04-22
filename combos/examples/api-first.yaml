@@ -1,8 +1,0 @@
-name: api-first
-description: "API design to implementation: RESTful API design, Python patterns, and testing strategies"
-type: chain
-execution: serial
-skills:
-  - api-rest-design
-  - python-patterns
-  - testing-strategies

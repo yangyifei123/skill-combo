@@ -1,6 +1,6 @@
 {
   "name": "skill-combo",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Skill orchestration framework for OpenCode - chain skills like fighting game combos",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

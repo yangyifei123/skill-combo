@@ -49,6 +49,9 @@ export declare class OpenCodeInvoker implements SkillInvoker {
 /**
  * Create an OpenCodeInvoker from global OpenCode context
  * This function should be called when loading the plugin in OpenCode runtime
+ *
+ * @returns OpenCodeInvoker if running in OpenCode runtime with skill() available,
+ *          otherwise returns DefaultInvoker with a warning
  */
-export declare function createOpenCodeInvoker(): OpenCodeInvoker;
+export declare function createOpenCodeInvoker(): SkillInvoker;
 //# sourceMappingURL=opencode-invoker.d.ts.map

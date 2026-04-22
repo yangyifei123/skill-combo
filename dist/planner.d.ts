@@ -1,15 +1,28 @@
 import { Combo, ExecutionPlan, IPlanner, Skill } from './types';
 /**
  * Planner creates execution plans from combos
- * MVP supports simple chain/serial planning only
+ * Respects skill load_skills dependencies via topological sort
  */
 export declare class Planner implements IPlanner {
     constructor();
     /**
      * Create an execution plan from a combo
-     * For MVP, this creates simple linear steps for serial execution
+     * Uses topological sort to respect load_skills dependencies
      */
-    plan(combo: Combo, _skills: Skill[]): ExecutionPlan;
+    plan(combo: Combo, skills: Skill[]): ExecutionPlan;
+    /**
+     * Create a linear execution plan (fallback when no skill metadata available)
+     */
+    private createLinearPlan;
+    /**
+     * Detect circular dependencies using DFS
+     * Returns the cycle path if found, null otherwise
+     */
+    private findCycle;
+    /**
+     * Topological sort using Kahn's algorithm with combo order as tiebreaker
+     */
+    private topologicalSort;
     /**
      * Suggest best combo for a task description
      * @deprecated Not implemented - requires NLP task analysis
@@ -20,5 +33,9 @@ export declare class Planner implements IPlanner {
      * Map combo type to appropriate aggregation strategy
      */
     private getAggregationForComboType;
+    /**
+     * Distribute combo timeout to steps based on execution mode and combo type
+     */
+    private distributeTimeoutToSteps;
 }
 //# sourceMappingURL=planner.d.ts.map

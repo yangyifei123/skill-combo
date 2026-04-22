@@ -1,16 +1,16 @@
-# Example Combo: Research Report
-# This combo chains market research → content writing
+# Example Combo: Content Creation Pipeline
+# Demonstrates a chain combo using skills that exist in the base registry
 
 combo:
   name: research-report
-  description: "Complete market research and generate SEO-optimized report"
+  description: "Content research followed by humanized writing"
   type: chain
   execution: serial
   skills:
-    - market-research-1.0.0
-    - seo-content-writer
+    - content-research-writer
+    - humanizer
   schema:
     input:
       topic: "The research topic"
     output:
-      report: "Final markdown report"
+      report: "Final humanized markdown report"
