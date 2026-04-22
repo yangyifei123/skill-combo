@@ -228,7 +228,7 @@ describe('Engine Edge Cases', () => {
       const result = await engine.executeParallel(steps, invoker, 'merge');
 
       expect(result.success).toBe(true);
-      expect(result.outputs).toEqual({ value: 42 });
+      expect(result.outputs).toEqual({ 'only-skill': { value: 42 } });
     });
   });
 

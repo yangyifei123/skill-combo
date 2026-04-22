@@ -819,10 +819,15 @@ constructor(config: EngineConfig = {}) {
 
     switch (aggregation) {
       case 'merge':
-        // Deep merge all outputs
+        // Merge outputs, keyed by skill_id to prevent overwrite
         for (const output of outputs) {
           if (output.success && output.result) {
-            Object.assign(result, output.result);
+            if (output.skill_id) {
+              // Key by skill_id to preserve all parallel outputs
+              result[output.skill_id] = output.result;
+            } else {
+              Object.assign(result, output.result);
+            }
           } else if (output.error) {
             errors.push(output.error);
           }
@@ -830,10 +835,14 @@ constructor(config: EngineConfig = {}) {
         break;
 
       case 'override':
-        // Later outputs override earlier ones
+        // Later outputs override earlier ones, keyed by skill_id
         for (const output of outputs) {
           if (output.success && output.result) {
-            Object.assign(result, output.result);
+            if (output.skill_id) {
+              result[output.skill_id] = output.result;
+            } else {
+              Object.assign(result, output.result);
+            }
           } else if (output.error) {
             errors.push(output.error);
           }

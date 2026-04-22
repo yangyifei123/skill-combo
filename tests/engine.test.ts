@@ -364,7 +364,7 @@ describe('Engine - Serial Execution', () => {
 
       const { result } = engine.aggregateOutputs(outputs, 'merge');
 
-      expect(result).toEqual({ a: 1, b: 2, c: 3, d: 4 });
+      expect(result).toEqual({ s1: { a: 1, b: 2 }, s2: { c: 3, d: 4 } });
     });
 
     it('should handle override aggregation - later wins', () => {
@@ -375,7 +375,7 @@ describe('Engine - Serial Execution', () => {
 
       const { result } = engine.aggregateOutputs(outputs, 'override');
 
-      expect(result.key).toBe('second');
+      expect(result.s2.key).toBe('second');
     });
 
     it('should handle first-win aggregation', () => {
@@ -432,7 +432,7 @@ describe('Engine - Serial Execution', () => {
 
       const { result, errors } = engine.aggregateOutputs(outputs, 'merge');
 
-      expect(result).toEqual({ a: 1 });
+      expect(result).toEqual({ s1: { a: 1 } });
       expect(errors).toContain('Failed to execute');
     });
 
@@ -589,7 +589,7 @@ describe('Engine - Parallel Execution', () => {
       const result = await engine.executeParallel(steps, invoker, 'merge');
 
       expect(result.success).toBe(true);
-      expect(result.outputs).toEqual({ a: 1, b: 2 });
+      expect(result.outputs).toEqual({ 'skill-a': { a: 1 }, 'skill-b': { b: 2 } });
     });
 
     it('should handle parallel execution failures', async () => {
