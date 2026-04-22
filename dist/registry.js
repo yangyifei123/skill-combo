@@ -142,7 +142,7 @@ class Registry {
             });
         }
         // Validate execution mode
-        const validExecutions = ['serial', 'parallel'];
+        const validExecutions = ['serial', 'parallel', 'interleaved'];
         if (!combo.execution || !validExecutions.includes(combo.execution)) {
             errors.push({
                 field: 'execution',

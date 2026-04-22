@@ -45,6 +45,7 @@ const planner_1 = require("./planner");
 const registry_1 = require("./registry");
 const scanner_1 = require("./scanner");
 const colors_1 = require("./colors");
+const opencode_invoker_1 = require("./opencode-invoker");
 const REGISTRY_FILE = '.skill-combo-registry.json';
 /**
  * Display execution statistics in verbose mode
@@ -649,9 +650,9 @@ async function main(args) {
                 console.error('Usage: skill-combo run <combo-name> [--debug] [--dry-run] [--verbose] [--json]');
                 process.exit(1);
             }
-            // Use DefaultInvoker for CLI (mock execution)
+            // Use OpenCode invoker (real execution in OpenCode runtime, fallback to mock otherwise)
             const debugCli = new CLI(config);
-            const invoker = new DefaultInvoker();
+            const invoker = (0, opencode_invoker_1.createOpenCodeInvoker)();
             // Validate combo exists before execution
             const combo = debugCli.getRegistry().getCombo(comboName);
             if (!combo) {

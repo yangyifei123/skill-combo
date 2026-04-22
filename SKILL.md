@@ -16,29 +16,40 @@ Use skill-combo when a task requires multiple skills to work together:
 
 ## Usage
 
-### Via skill() Tool
+### Mode 1: CLI (Standalone)
 
-Invoke skill-combo through the skill tool:
+When running outside OpenCode, use the CLI directly:
 
-```javascript
-// Run a pre-defined combo
-await skill({ name: 'skill-combo', user_message: 'run research-report' });
+```bash
+# Scan for available skills
+node dist/cli.js scan --save
 
-// Scan for available skills
-await skill({ name: 'skill-combo', user_message: 'scan' });
+# List discovered skills
+node dist/cli.js list
 
-// List discovered skills
-await skill({ name: 'skill-combo', user_message: 'list' });
+# List registered combos
+node dist/cli.js combos
 
-// List registered combos
-await skill({ name: 'skill-combo', user_message: 'combos' });
+# Run a combo (dry-run first to preview)
+node dist/cli.js run frontend-dev --dry-run
 
-// Dry-run to preview execution plan
-await skill({ name: 'skill-combo', user_message: 'run research-report --dry-run' });
-
-// Verbose execution with per-step stats
-await skill({ name: 'skill-combo', user_message: 'run research-report --verbose' });
+# Execute with verbose output
+node dist/cli.js run content-creation --verbose
 ```
+
+### Mode 2: OpenCode Plugin
+
+When loaded as an OpenCode plugin, skill-combo auto-detects the OpenCode runtime and uses real skill execution via the `skill()` tool.
+
+**For AI agents running inside OpenCode:**
+
+Simply use the commands directly — the plugin handles skill execution automatically:
+
+- **Scan skills**: `node dist/cli.js scan --save` or just run `scan` via the CLI
+- **List combos**: `node dist/cli.js combos`
+- **Run a combo**: `node dist/cli.js run <combo-name>` (e.g., `node dist/cli.js run frontend-dev`)
+
+The plugin uses `createOpenCodeInvoker()` which detects OpenCode's global `skill()` function and routes real skill executions through it.
 
 ### As Module
 
@@ -60,12 +71,12 @@ Combos define how skills compose together. Define combos in YAML or programmatic
 Skills execute one after another. Each skill's output becomes context for the next:
 
 ```yaml
-name: research-report
+name: content-creation
 type: chain
 execution: serial
 skills:
-  - market-research-1.0.0
-  - seo-content-writer
+  - content-research-writer
+  - humanizer
 ```
 
 ### Parallel Combo
@@ -91,8 +102,8 @@ type: wrap
 execution: serial
 skills:
   - session-manager    # wrapper
-  - market-research-1.0.0
-  - seo-content-writer
+  - content-research-writer
+  - humanizer
 ```
 
 ### Conditional Combo
@@ -143,15 +154,15 @@ In serial (chain) execution, outputs flow automatically between skills:
 ### Example Flow
 
 ```
-market-research-1.0.0 outputs: { keywords: [...], trends: [...] }
+content-research-writer outputs: { keywords: [...], trends: [...] }
   ↓
-Context for seo-content-writer:
+Context for humanizer:
   {
-    "market-research-1.0.0.output": { keywords: [...], trends: [...] },
+    "content-research-writer.output": { keywords: [...], trends: [...] },
     "step.inputs": {}
   }
   ↓
-seo-content-writer can access: context["market-research-1.0.0.output"].keywords
+humanizer can access: context["content-research-writer.output"].keywords
 ```
 
 ### Parallel Aggregation
@@ -204,26 +215,26 @@ For parallel combos, results are merged using an aggregation strategy:
 
 ## Examples
 
-### Research to Report
+### Content Creation Pipeline
 
-```javascript
-await skill({ name: 'skill-combo', user_message: 'run research-report' });
+```bash
+node dist/cli.js run content-creation --verbose
 ```
 
-Runs `market-research-1.0.0` then feeds its output into `seo-content-writer`.
+Chains `content-research-writer` → `humanizer` for research-to-content workflow.
 
 ### Parallel Code Review
 
-```javascript
-await skill({ name: 'skill-combo', user_message: 'run code-review-full --verbose' });
+```bash
+node dist/cli.js run code-review-partial --verbose
 ```
 
-Runs `security-auditor` and `performance-optimization` simultaneously.
+Runs `performance-optimization` and `testing-strategies` simultaneously.
 
 ### Frontend Pipeline
 
-```javascript
-await skill({ name: 'skill-combo', user_message: 'run frontend-dev' });
+```bash
+node dist/cli.js run frontend-dev
 ```
 
 Chains `frontend-design` → `ts-react-nextjs` for design-to-code workflow.
@@ -238,8 +249,8 @@ description: Research then write  # One-liner
 type: chain                 # chain|parallel|wrap|conditional
 execution: serial           # serial|parallel
 skills:                     # Ordered list of skill names
-  - market-research-1.0.0
-  - seo-content-writer
+  - content-research-writer
+  - humanizer
 ```
 
 **Validate** before using:

@@ -10,6 +10,7 @@ import { Registry } from './registry';
 import { scanSkills } from './scanner';
 import { SkillInvoker, SkillContext, SkillOutput } from './types';
 import { success, error, warning, colorize } from './colors';
+import { createOpenCodeInvoker } from './opencode-invoker';
 
 const REGISTRY_FILE = '.skill-combo-registry.json';
 
@@ -716,9 +717,9 @@ export async function main(args: string[]): Promise<void> {
         process.exit(1);
       }
 
-      // Use DefaultInvoker for CLI (mock execution)
+      // Use OpenCode invoker (real execution in OpenCode runtime, fallback to mock otherwise)
       const debugCli = new CLI(config);
-      const invoker = new DefaultInvoker();
+      const invoker = createOpenCodeInvoker();
 
       // Validate combo exists before execution
       const combo = debugCli.getRegistry().getCombo(comboName);
