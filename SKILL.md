@@ -418,7 +418,7 @@ interface ExecutionWave {
 ```yaml
 name: string                    # Unique combo name
 type: subagent                  # Must be "subagent"
-execution: serial | parallel    # serial=wave间串行, parallel=全部并行
+execution: serial | parallel    # serial: Wave 0 → Wave 1 → Wave 2 串行; parallel: 所有 step 同时并行（忽略 wave）
 subagent_steps:
   - name: string                # Unique step identifier
     skills:                     # Skills to load into this subagent
@@ -451,7 +451,7 @@ timeout?: number               # Combo-level timeout (ms)
 | `combos` | List registered combos (including subagent combos) |
 | `run <name>` | Execute a combo by name |
 | `extract` | Extract patterns from session history, auto-generate SKILL.md |
-| `help [cmd]` | Show help for a command |
+| `help <command>` | Show help for a specific command |
 
 ### Options
 
@@ -470,22 +470,24 @@ timeout?: number               # Combo-level timeout (ms)
 node dist/cli.js extract
 
 # 只提取高分模式（worthiness >= 70）
-node dist/cli.js extract --min-score 70
+node dist/cli.js extract --min-score=70
 
 # 最多生成 5 个 skill
-node dist/cli.js extract --max 5
+node dist/cli.js extract --max=5
 
 # 指定输出目录
-node dist/cli.js extract --output-dir ./my-skills
+node dist/cli.js extract --output-dir=./my-skills
 
 # JSON 格式输出
 node dist/cli.js extract --json
 ```
 
+**注意：extract 的 flag 使用 `=` 连接，不支持空格分隔。**
+
 **工作流程：**
 1. `SessionProvider` 获取最近 20 个会话（优先用 OpenCode API，回退到 JSONL 文件）
 2. `PatternMiner` 用 n-gram（n=2~4）提取行为序列
-3. 按频率打分，评估 worthiness（频率 40% + 通用性 20% + 复杂度降低 20% + 错误降低 10%）
+3. 按频率打分，评估 worthiness（频率 max 40% + 通用性 max 20% + 复杂度降低 max 20% + 错误降低 max 10% = 满分 90）
 4. `SkillGenerator` 生成标准 SKILL.md（YAML frontmatter + markdown body）
 
 ## Core Exports
@@ -597,12 +599,12 @@ subagent_steps:
 
 **Validate** before using:
 ```bash
-skill-combo combos --validate
+node dist/cli.js combos --validate
 ```
 
 **Dry-run** to preview:
 ```bash
-skill-combo run my-combo --dry-run
+node dist/cli.js run my-combo --dry-run
 ```
 
 ## Anti-Patterns
@@ -644,15 +646,15 @@ NEVER use subagent when:
 
 ### Persistence (`--save`)
 ```bash
-skill-combo scan --save   # Save 103 skills to .skill-combo-registry.json
-skill-combo list          # Auto-loads from saved registry
-skill-combo run my-combo  # Auto-loads skills and combos
+node dist/cli.js scan --save   # Save 103 skills to .skill-combo-registry.json
+node dist/cli.js list          # Auto-loads from saved registry
+node dist/cli.js run my-combo  # Auto-loads skills and combos
 ```
 
 ### Machine-Readable Output (`--json`)
 ```bash
-skill-combo scan --json    # {"skills":[...],"errors":[],"timestamp":...}
-skill-combo combos --json  # {"combos":[...],"count":9}
+node dist/cli.js scan --json    # {"skills":[...],"errors":[],"timestamp":...}
+node dist/cli.js combos --json  # {"combos":[...],"count":12}
 ```
 
 ### Error Recovery (retry)
