@@ -1,0 +1,101 @@
+# Subagent Combo Example - Full-stack development with parallel execution
+# Each step spawns a subagent that loads one or more skills
+# Dependencies are resolved automatically into execution waves
+
+combos:
+  - name: subagent-fullstack
+    description: "Full-stack dev: research and design in parallel, then implement, test, and docs"
+    type: subagent
+    execution: serial
+    skills: []  # subagent combos use subagent_steps, not skills
+    subagent_steps:
+      - name: research
+        skills:
+          - context7
+        prompt: "Research best practices and patterns for the requested feature"
+        depends_on: []
+
+      - name: design
+        skills:
+          - architecture-designer
+          - api-rest-design
+        prompt: "Design the system architecture and API based on research findings"
+        depends_on:
+          - research
+        context_from:
+          - research
+
+      - name: implement
+        skills:
+          - python-patterns
+          - ts-react-nextjs
+        prompt: "Implement the feature based on the design output"
+        depends_on:
+          - design
+        context_from:
+          - design
+
+      - name: test
+        skills:
+          - testing-strategies
+          - security-auditor
+        prompt: "Write tests and run security audit on the implementation"
+        depends_on:
+          - implement
+        context_from:
+          - implement
+
+      - name: docs
+        skills:
+          - code-docs
+          - project-docs
+        prompt: "Generate code documentation and project documentation"
+        depends_on:
+          - test
+        context_from:
+          - test
+
+    subagent_aggregation: structured
+    subagent_error_strategy: continue
+    timeout: 600000
+
+  - name: subagent-security-audit
+    description: "Parallel security audit with multiple subagents"
+    type: subagent
+    execution: serial
+    skills: []
+    subagent_steps:
+      - name: vuln-scan
+        skills:
+          - security-auditor
+        prompt: "Run vulnerability scan on the codebase"
+        depends_on: []
+
+      - name: auth-check
+        skills:
+          - security-best-practices
+        prompt: "Check authentication and authorization patterns"
+        depends_on: []
+
+      - name: dependency-audit
+        skills:
+          - clawdefender
+        prompt: "Audit dependencies for known vulnerabilities"
+        depends_on: []
+
+      - name: report
+        skills:
+          - humanizer
+        prompt: "Compile security audit findings into a human-readable report"
+        depends_on:
+          - vuln-scan
+          - auth-check
+          - dependency-audit
+        context_from:
+          - vuln-scan
+          - auth-check
+          - dependency-audit
+
+    subagent_aggregation: structured
+    subagent_error_strategy: continue
+    timeout: 300000

@@ -1,8 +1,8 @@
 # Skill-Combo
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 **类型**: OpenCode 插件（每次会话自动启用）
-**描述**: 把多个 skill 串成连招来用，像格斗游戏的 combo 一样。支持串行、并行、包裹、条件执行。
+**描述**: 把多个 skill 串成连招来用，像格斗游戏的 combo 一样。支持串行、并行、包裹、条件执行、Subagent 组合、会话知识提取。
 
 ---
 
@@ -156,12 +156,40 @@ node dist/cli.js run frontend-dev
 | `list` | 列出已发现的 skill |
 | `combos [--validate]` | 列出所有 combo，顺便验证能不能跑 |
 | `run <name> [--dry-run]` | 执行一个 combo |
+| `extract [options]` | 从历史会话中提取模式，自动生成 SKILL.md |
 
 带 `--dry-run` 先看看执行计划再决定要不要真跑，这个很重要。
 
+### extract 命令详解
+
+从 OpenCode 历史会话中挖掘重复模式，自动生成可复用的 SKILL.md 文件。
+
+```bash
+# 基本用法：提取最近的会话模式
+node dist/cli.js extract
+
+# 只提取高分模式（worthiness >= 70）
+node dist/cli.js extract --min-score 70
+
+# 最多生成 5 个 skill
+node dist/cli.js extract --max 5
+
+# 指定输出目录
+node dist/cli.js extract --output-dir ./my-skills
+
+# JSON 格式输出
+node dist/cli.js extract --json
+```
+
+**工作原理：**
+1. 从 OpenCode 获取最近 20 个会话
+2. 用 n-gram 算法（n=2~4）提取行为序列
+3. 按频率打分，评估模式的通用性、复杂度、可靠性
+4. 生成标准格式的 SKILL.md 文件（含 YAML frontmatter）
+
 ---
 
-## 预设的 10 个 Combo
+## 预设的 12 个 Combo
 
 | 名字 | 类型 | 怎么串的 |
 |------|------|---------|
@@ -175,8 +203,10 @@ node dist/cli.js run frontend-dev
 | `git-workflow` | chain | git-commit → git-release |
 | `content-creation` | chain | content-research-writer → humanizer |
 | `research-report` | chain | content-research-writer → humanizer |
+| `subagent-fullstack` | subagent | research → design → implement → test → docs |
+| `subagent-security-audit` | subagent | vuln-scan ‖ auth-check ‖ dependency-audit → report |
 
-你 103 个 skill，组合空间远不止这 10 个。上面只是开箱即用的，自己写 YAML 可以组合出任何你想要的工作流。
+你 103 个 skill，组合空间远不止这 12 个。上面只是开箱即用的，自己写 YAML 可以组合出任何你想要的工作流。
 
 ---
 
@@ -197,8 +227,225 @@ node dist/cli.js run frontend-dev
 
 ---
 
+## Subagent 组合
+
+Subagent 组合是 Skill-Combo 的进阶功能，让你用单个 AI agent 实现团队效果。
+
+### 是什么
+
+每个 step 启动一个 subagent，通过 `task()` 加载 1 个或多个 skill 执行任务。多个 step 按依赖关系组成执行波次（waves），同波次内的 step 并行执行。
+
+### 解决了什么问题
+
+| 问题 | 传统方式 | Subagent 方式 |
+|------|---------|--------------|
+| 多人协作场景 | 需要协调多个 AI agent | 单 agent 分工，自动协作 |
+| 技能组合 | 一个 task 只能用一种 skill | 一个 step 加载多个 skill |
+| 依赖管理 | 手动控制执行顺序 | 自动拓扑排序 + wave 执行 |
+| 上下文传递 | 手动拼接 prompt | `context_from` 自动注入 |
+| 错误处理 | 失败即终止 | `fail-fast` / `continue` / `partial` 三种策略 |
+
+### 核心概念
+
+#### WaveScheduler（波次调度器）
+
+```
+Wave 0: 无依赖的 step（如 research）→ 并行执行
+Wave 1: 依赖 Wave 0 完成的 step（如 design）→ 并行执行
+Wave 2: 依赖 Wave 1 完成的 step（如 implement）→ 并行执行
+...
+```
+
+#### TaskInvoker（任务调用器）
+
+Subagent 通过 OpenCode 的 `task()` 函数启动，加载指定 skill：
+
+```typescript
+interface TaskInvoker {
+  // 启动 subagent，加载 skills，执行 prompt
+  spawn(
+    load_skills: string[],  // 要加载的 skill 列表
+    prompt: string,          // 任务描述
+    context: SkillContext,   // 上下文（来自依赖 step 的输出）
+    options?: TaskSpawnOptions
+  ): Promise<SubagentOutput>;
+  
+  // 检查 task() 运行时是否可用
+  isAvailable(): Promise<boolean>;
+}
+```
+
+#### YAML 定义结构
+
+```yaml
+combos:
+  - name: subagent-fullstack
+    type: subagent           # 必须是 subagent 类型
+    execution: serial        # wave 间串行，wave 内并行
+    subagent_steps:
+      - name: research       # step 名称，唯一标识
+        skills:              # 加载哪些 skill
+          - context7
+        prompt: "Research best practices..."
+        depends_on: []       # 依赖哪些 step（空=无依赖，Wave 0）
+
+      - name: design
+        skills:
+          - architecture-designer
+          - api-rest-design
+        prompt: "Design the system..."
+        depends_on:
+          - research         # 依赖 research，必须等其完成后执行
+        context_from:
+          - research         # 将 research 的输出注入 context
+
+    subagent_aggregation: structured  # 结果聚合方式
+    subagent_error_strategy: continue # 错误处理策略
+    timeout: 600000           # combo 级超时（ms）
+```
+
+### 执行流程
+
+```
+1. SubagentOrchestrator.execute(combo, invoker)
+   ↓
+2. WaveScheduler.schedule(combo) → 生成执行计划
+   ├── Wave 0: [research]                    # 无依赖，并行
+   ├── Wave 1: [design]                      # 依赖 research
+   ├── Wave 2: [implement]                  # 依赖 design
+   ├── Wave 3: [test]                        # 依赖 implement
+   └── Wave 4: [docs]                        # 依赖 test
+   ↓
+3. 遍历每个 Wave：
+   ├── 收集依赖 step 的输出 → 构建 context
+   ├── Promise.all(wave.steps.map(spawnStep))  # 波次内并行
+   └── 聚合结果 → 下一个 Wave
+   ↓
+4. 返回 ComboResult { outputs, errors, tokens_used, duration_ms }
+```
+
+### 完整示例
+
+`combos/examples/subagent-fullstack.yaml`:
+
+```yaml
+combos:
+  - name: subagent-fullstack
+    description: "Full-stack dev: research → design → implement → test → docs"
+    type: subagent
+    execution: serial
+    skills: []  # subagent combos use subagent_steps, not skills
+    subagent_steps:
+      - name: research
+        skills:
+          - context7
+        prompt: "Research best practices and patterns for the requested feature"
+        depends_on: []
+
+      - name: design
+        skills:
+          - architecture-designer
+          - api-rest-design
+        prompt: "Design the system architecture and API based on research findings"
+        depends_on:
+          - research
+        context_from:
+          - research
+
+      - name: implement
+        skills:
+          - python-patterns
+          - ts-react-nextjs
+        prompt: "Implement the feature based on the design output"
+        depends_on:
+          - design
+        context_from:
+          - design
+
+      - name: test
+        skills:
+          - testing-strategies
+          - security-auditor
+        prompt: "Write tests and run security audit on the implementation"
+        depends_on:
+          - implement
+        context_from:
+          - implement
+
+      - name: docs
+        skills:
+          - code-docs
+          - project-docs
+        prompt: "Generate code documentation and project documentation"
+        depends_on:
+          - test
+        context_from:
+          - test
+
+    subagent_aggregation: structured
+    subagent_error_strategy: continue
+    timeout: 600000
+```
+
+### CLI 命令
+
+```bash
+# 扫描并保存 skill 列表
+node dist/cli.js scan --save
+
+# 查看所有 combo（包括 subagent combos）
+node dist/cli.js combos
+
+# 验证 combo 能否执行
+node dist/cli.js combos --validate
+
+# 干跑看计划（不实际执行）
+node dist/cli.js run subagent-fullstack --dry-run
+
+# 真正执行 subagent combo
+node dist/cli.js run subagent-fullstack
+
+# 带详细输出
+node dist/cli.js run subagent-fullstack --verbose
+```
+
+### 预设的 Subagent Combo
+
+| 名字 | 干嘛的 |
+|------|--------|
+| `subagent-fullstack` | 完整开发流程：调研 → 设计 → 实现 → 测试 → 文档 |
+| `subagent-security-audit` | 并行安全审计：漏洞扫描 + 认证检查 + 依赖审计 → 汇总报告 |
+
+---
+
 ## 架构
 
+```
+┌─────────────────────────────────────────────┐
+│              Skill-Combo v2.0                │
+├─────────────────────────────────────────────┤
+│  Scanner   │  Registry  │  Engine           │
+│  - 发现    │  - 存储     │  - 串行执行       │
+│  - 索引    │  - 查询     │  - 并行执行       │
+│  - 回退    │  - 持久化   │  - 重试           │
+├─────────────────────────────────────────────┤
+│  Planner   │  CLI        │  Cache/TTL        │
+│  - 排序    │  - scan     │  - 去重           │
+│  - 优化    │  - run      │  - 过期           │
+├─────────────────────────────────────────────┤
+│  SubagentOrchestrator │  WaveScheduler      │
+│  - task() 调用        │  - 波次生成         │
+│  - skill 组合        │  - 依赖解析         │
+│  - 错误处理          │  - 并行调度         │
+├─────────────────────────────────────────────┤
+│  SessionProvider  │  PatternMiner          │
+│  - 会话列表        │  - n-gram 挖掘        │
+│  - 会话读取        │  - 频率统计           │
+│  - JSONL 回退      │  - worthiness 打分    │
+├─────────────────────────────────────────────┤
+│  SkillGenerator                            │
+│  - SKILL.md 生成     │  - YAML frontmatter  │
+└─────────────────────────────────────────────┘
 ```
 ┌─────────────────────────────────────────────┐
 │              Skill-Combo                     │
@@ -211,6 +458,11 @@ node dist/cli.js run frontend-dev
 │  Planner   │  CLI        │  Cache/TTL        │
 │  - 排序    │  - scan     │  - 去重           │
 │  - 优化    │  - run      │  - 过期           │
+├─────────────────────────────────────────────┤
+│  SubagentOrchestrator │  WaveScheduler      │
+│  - task() 调用        │  - 波次生成         │
+│  - skill 组合        │  - 依赖解析         │
+│  - 错误处理          │  - 并行调度         │
 └─────────────────────────────────────────────┘
 ```
 
@@ -250,6 +502,7 @@ skills:
 - **parallel**: 几个一起跑，结果汇总
 - **wrap**: 头尾包住中间（适合做初始化和清理）
 - **conditional**: 根据条件选分支
+- **subagent**: Subagent 组合，用 task() 启动 subagent
 
 ---
 
@@ -265,13 +518,13 @@ skills:
 
 | 指标 | 数值 |
 |------|------|
-| 测试 | 209 个，12 个套件，全部通过 |
-| 沙箱验证 | 3 条独立测试线，52 项检查，0 失败 |
-| Oracle 架构评审 | 85/100 |
+| 测试 | 253 个，14 个套件，251 通过 |
+| Oracle 架构评审 | 95/100（subagent）, 72/100（session） |
 | Subagent 可理解性 | 95/100 |
 | 发现的 skill | 103 个 |
-| 预设 combo | 10 个（全部验证通过） |
+| 预设 combo | 12 个（10 基础 + 2 subagent） |
 | 自动启用 | 每次会话自动加载 |
+| 版本 | 2.0.0 |
 
 ---
 
