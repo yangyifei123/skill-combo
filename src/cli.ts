@@ -9,8 +9,11 @@ import { Planner } from './planner';
 import { Registry } from './registry';
 import { scanSkills } from './scanner';
 import { SkillInvoker, SkillContext, SkillOutput } from './types';
-import { success, error, warning, colorize } from './colors';
+import { success, error, warning, info, colorize } from './colors';
 import { createOpenCodeInvoker } from './opencode-invoker';
+import { createSessionProvider } from './session-provider';
+import { PatternMiner } from './pattern-miner';
+import { SkillGenerator } from './skill-generator';
 
 const REGISTRY_FILE = '.skill-combo-registry.json';
 
@@ -760,6 +763,84 @@ export async function main(args: string[]): Promise<void> {
         console.error(colorize('✗ Combo execution failed:', error));
         result.errors.forEach(err => { console.error(colorize(`  - ${err}`, error)); });
         process.exit(1);
+      }
+      break;
+    }
+
+    case 'extract': {
+      // skill-combo extract [--min-score=50] [--max=5] [--output-dir=./generated-skills/]
+      const rawFlags = args.slice(2).filter(a => a.startsWith('--'));
+      const flags = rawFlags.map(f => {
+        const eqIdx = f.indexOf('=');
+        return eqIdx === -1 ? f : f.substring(0, eqIdx);
+      });
+
+      const getFlagValue = (flag: string, fallback: string): string => {
+        for (const f of rawFlags) {
+          const eqIdx = f.indexOf('=');
+          if (f.substring(0, eqIdx) === flag) return f.substring(eqIdx + 1);
+        }
+        return fallback;
+      };
+
+      const minScore = parseInt(getFlagValue('--min-score', '50'), 10);
+      const maxSkills = parseInt(getFlagValue('--max', '5'), 10);
+      const outputDir = getFlagValue('--output-dir', './generated-skills/');
+      const jsonOutput = flags.includes('--json');
+
+      // Validate output-dir: prevent path traversal
+      const resolvedOutputDir = path.resolve(outputDir);
+      if (outputDir.includes('..')) {
+        console.error(colorize('✗ --output-dir cannot contain ".." (path traversal not allowed).', error));
+        process.exit(1);
+      }
+
+      console.log(colorize('🔍 Analyzing sessions for skill extraction patterns...', info));
+
+      const provider = createSessionProvider();
+      if (!provider.isAvailable()) {
+        console.error(colorize('✗ No session data available. Run within OpenCode or provide prompt-history.jsonl.', error));
+        process.exit(1);
+      }
+
+      const sessions = await provider.listSessions(20);
+      if (sessions.length === 0) {
+        console.error(colorize('✗ No sessions found.', error));
+        process.exit(1);
+      }
+
+      console.log(colorize(`  Found ${sessions.length} session(s)`, info));
+
+      const miner = new PatternMiner({
+        min_worthiness: minScore,
+        max_skills: maxSkills,
+        output_dir: outputDir,
+      });
+
+      const patterns = miner.mine(sessions);
+      if (patterns.length === 0) {
+        console.log(colorize('  No skill-worthy patterns found. Try lowering --min-score.', warning));
+        process.exit(0);
+      }
+
+      console.log(colorize(`  Found ${patterns.length} pattern(s) above score ${minScore}`, success));
+
+      const generator = new SkillGenerator();
+      const results = patterns.map(p => {
+        const skill = generator.generate(p);
+        const filePath = generator.save(skill, resolvedOutputDir);
+        return { ...skill, file_path: filePath };
+      });
+
+      if (jsonOutput) {
+        console.log(JSON.stringify({ success: true, patterns: results }, null, 2));
+      } else {
+        for (const r of results) {
+          console.log(colorize(`  ✓ Generated: ${r.file_path}`, success));
+          console.log(`    Name: ${r.name}`);
+          console.log(`    Score: ${r.worthiness_score}/100`);
+          console.log(`    Pattern: ${r.patterns_used.join(' → ')}`);
+        }
       }
       break;
     }

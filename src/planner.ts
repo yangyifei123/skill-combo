@@ -8,7 +8,10 @@ import {
   IPlanner,
   ResultAggregation,
   Skill,
+  SubagentCombo,
+  SubagentExecutionPlan,
 } from './types';
+import { WaveScheduler } from './wave-scheduler';
 
 /**
  * Planner creates execution plans from combos
@@ -18,7 +21,16 @@ export class Planner implements IPlanner {
   constructor() {}
 
   /**
-   * Create an execution plan from a combo
+   * Create a subagent execution plan from a SubagentCombo
+   * Uses WaveScheduler to build dependency-ordered waves
+   */
+  planSubagent(combo: SubagentCombo): SubagentExecutionPlan {
+    const scheduler = new WaveScheduler();
+    return scheduler.schedule(combo);
+  }
+
+  /**
+    * Create an execution plan from a combo
    * Uses topological sort to respect load_skills dependencies
    */
   plan(combo: Combo, skills: Skill[]): ExecutionPlan {

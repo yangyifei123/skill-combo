@@ -17,8 +17,14 @@ function normalizeCombo(combo: any, filePath: string): Combo | null {
   }
 
   // Validate required fields
-  if (!combo.name || !combo.type || !combo.skills) {
+  // Subagent combos use subagent_steps instead of skills
+  if (!combo.name || !combo.type) {
     console.error(`Invalid combo in ${filePath}: missing required fields`);
+    return null;
+  }
+
+  if (combo.type !== 'subagent' && !combo.skills) {
+    console.error(`Invalid combo in ${filePath}: missing skills field`);
     return null;
   }
 

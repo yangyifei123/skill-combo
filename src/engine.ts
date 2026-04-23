@@ -14,7 +14,10 @@ import {
   SkillInvoker,
   SkillOutput,
   StepResult,
+  SubagentCombo,
 } from './types';
+import { SubagentOrchestrator } from './subagent-orchestrator';
+import { createTaskInvoker } from './task-invoker';
 import { Cache, computeCacheKey } from './cache';
 
 /**
@@ -94,6 +97,19 @@ constructor(config: EngineConfig = {}) {
           default:
             throw new Error(`Unknown execution mode: ${combo.execution}`);
         }
+      }
+
+      case 'subagent': {
+        // Subagent combo: spawn subagents with loaded skills via task()
+        const subagentCombo = combo as SubagentCombo;
+        const taskInvoker = createTaskInvoker();
+        const orchestrator = new SubagentOrchestrator({
+          maxContextSize: this.config.maxContextSize,
+          defaultTimeout: this.config.skillTimeout,
+          maxRetries: this.config.maxRetries,
+          retryDelayMs: this.config.retryDelayMs,
+        });
+        return orchestrator.execute(subagentCombo, taskInvoker);
       }
 
       default:
