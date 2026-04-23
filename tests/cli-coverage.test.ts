@@ -120,13 +120,13 @@ describe('CLI Error Handling & Coverage', () => {
     });
   });
 
-  describe('7. CLI.listCombos() after loadDefaultCombos shows 10', () => {
-    it('should show 10 default combos', () => {
+  describe('7. CLI.listCombos() after loadDefaultCombos shows 12', () => {
+    it('should show 12 default combos (10 base + 2 subagent)', () => {
       const cli = new CLI();
       const result = cli.listCombos();
 
-      expect(result.count).toBe(10);
-      expect(result.combos.length).toBe(10);
+      expect(result.count).toBe(12);
+      expect(result.combos.length).toBe(12);
 
       // Verify specific expected combos exist
       const comboNames = result.combos.map((c: any) => c.name);
@@ -203,7 +203,7 @@ describe('CLI Error Handling & Coverage', () => {
       const combosResult2 = cli2.listCombos();
 
       expect(combosResult2.count).toBe(combosResult1.count);
-      expect(combosResult2.count).toBe(10);
+      expect(combosResult2.count).toBe(12);
     });
   });
 });
