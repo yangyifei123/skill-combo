@@ -1,6 +1,6 @@
 ---
 name: skill-combo
-description: ACTIVE EVERY SESSION. Auto-loads on every conversation. Skill orchestration framework that chains multiple skills into combos for maximum effect. When a task needs 2+ skills working together, automatically recommends or executes the best combo. Also extracts patterns from session history to auto-generate SKILL.md files. Triggers on multi-step tasks, skill composition, or any task that naturally decomposes into sequential or parallel sub-tasks.
+description: ACTIVE EVERY SESSION. Auto-loads on every conversation. Skill orchestration framework that chains multiple skills into combos for maximum effect. When a task needs 2+ skills working together, automatically recommends or executes the best combo. Also extracts patterns from session history to auto-generate SKILL.md files. Now supports ClawHub remote skill discovery for searching and discovering skills from remote repositories. Triggers on multi-step tasks, skill composition, or any task that naturally decomposes into sequential or parallel sub-tasks.
 ---
 
 ## Persistence
@@ -446,8 +446,9 @@ timeout?: number               # Combo-level timeout (ms)
 
 | Command | Description |
 |---------|-------------|
-| `scan` | Scan and index all skills from OpenCode skill directories |
-| `list` | List discovered skills with metadata |
+| `scan [--remote]` | Scan and index all skills from OpenCode skill directories; `--remote` also discovers skills from ClawHub |
+| `list [--source=all|local|remote]` | List discovered skills with metadata, filterable by source |
+| `search <query>` | Search local and remote skills by name, description, or tags |
 | `combos` | List registered combos (including subagent combos) |
 | `run <name>` | Execute a combo by name |
 | `extract` | Extract patterns from session history, auto-generate SKILL.md |
@@ -460,6 +461,30 @@ timeout?: number               # Combo-level timeout (ms)
 | `--dry-run` | Preview execution plan without running skills |
 | `--verbose` | Show per-step token usage and timing |
 | `--debug` | Enable debug logging |
+| `--remote` | Include ClawHub remote skills in scan results |
+| `--source=all|local|remote` | Filter skill list by source (default: all) |
+
+### search 命令
+
+在本地和 ClawHub 远程 skill 中搜索匹配项：
+
+```bash
+# 搜索所有匹配的 skill
+node dist/cli.js search "frontend"
+
+# 只搜索本地 skill
+node dist/cli.js search "frontend" --source=local
+
+# 只搜索远程 skill
+node dist/cli.js search "frontend" --source=remote
+
+# JSON 格式输出
+node dist/cli.js search "frontend" --json
+```
+
+**返回结果：**
+- 匹配 skill 的名称、描述、来源（local/remote）
+- 按匹配度排序
 
 ### extract 命令
 
@@ -510,10 +535,13 @@ node dist/cli.js extract --json
 - `JsonlSessionProvider` — JSONL file fallback session provider
 - `PatternMiner` — N-gram pattern extraction with worthiness scoring
 - `SkillGenerator` — SKILL.md file generator from extracted patterns
+- `ClawHubClient` — ClawHub remote API client for skill discovery
+- `RemoteScanner` — Remote skill scanning and result merging
 
 ## Capabilities
 
 - **Skill Discovery**: Automatically scans `~/.config/opencode/skills/` and `~/.agents/skills/`
+- **Remote Discovery**: Search and discover skills from ClawHub via `scan --remote` and `search` commands
 - **Skill Registry**: Central catalog queryable by category, capability, input, and output
 - **Combo Execution**: Chain, parallel, wrap, conditional, and subagent execution patterns
 - **Context Passing**: Automatic output-to-input context flow between chained skills
@@ -641,6 +669,8 @@ NEVER use subagent when:
 | Transient failure (network) | Skill invocation failed temporarily | Configure `maxRetries` in EngineConfig |
 | Subagent combo not found | Type not set to subagent | Check combo YAML has `type: subagent` |
 | Circular dependency error | `depends_on` creates a cycle | Check step dependencies for loops |
+| Remote scan fails | ClawHub API unreachable | Check network connection; remote features degrade gracefully |
+| search returns 0 results | Query too specific or no match | Try broader search terms; use `--source=all` |
 
 ## Advanced Features
 

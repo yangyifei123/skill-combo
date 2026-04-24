@@ -1,8 +1,8 @@
 # Skill-Combo
 
-**版本**: 2.0.0
+**版本**: 3.0.0
 **类型**: OpenCode 插件（每次会话自动启用）
-**描述**: 把多个 skill 串成连招来用，像格斗游戏的 combo 一样。支持串行、并行、包裹、条件执行、Subagent 组合、会话知识提取。
+**描述**: 把多个 skill 串成连招来用，像格斗游戏的 combo 一样。支持串行、并行、包裹、条件执行、Subagent 组合、会话知识提取、ClawHub 远程发现。
 
 ---
 
@@ -152,8 +152,9 @@ node dist/cli.js run frontend-dev
 
 | 命令 | 干嘛的 |
 |------|--------|
-| `scan [--save]` | 扫描所有 skill，建立索引 |
-| `list` | 列出已发现的 skill |
+| `scan [--save] [--remote]` | 扫描本地 skill，`--remote` 从 ClawHub 发现远程 skill |
+| `list [--source=all|local|remote]` | 列出已发现的 skill，支持按来源筛选 |
+| `search <query>` | 在本地和远程 skill 中搜索匹配项 |
 | `combos [--validate]` | 列出所有 combo，顺便验证能不能跑 |
 | `run <name> [--dry-run]` | 执行一个 combo |
 | `extract [options]` | 从历史会话中提取模式，自动生成 SKILL.md |
@@ -422,7 +423,7 @@ node dist/cli.js run subagent-fullstack --verbose
 
 ```
 ┌─────────────────────────────────────────────┐
-│              Skill-Combo v2.0                │
+│              Skill-Combo v3.0                │
 ├─────────────────────────────────────────────┤
 │  Scanner   │  Registry  │  Engine           │
 │  - 发现    │  - 存储     │  - 串行执行       │
@@ -445,24 +446,10 @@ node dist/cli.js run subagent-fullstack --verbose
 ├─────────────────────────────────────────────┤
 │  SkillGenerator                            │
 │  - SKILL.md 生成     │  - YAML frontmatter  │
-└─────────────────────────────────────────────┘
-```
-┌─────────────────────────────────────────────┐
-│              Skill-Combo                     │
 ├─────────────────────────────────────────────┤
-│  Scanner   │  Registry  │  Engine           │
-│  - 发现    │  - 存储     │  - 串行执行       │
-│  - 索引    │  - 查询     │  - 并行执行       │
-│  - 回退    │  - 持久化   │  - 重试           │
-├─────────────────────────────────────────────┤
-│  Planner   │  CLI        │  Cache/TTL        │
-│  - 排序    │  - scan     │  - 去重           │
-│  - 优化    │  - run      │  - 过期           │
-├─────────────────────────────────────────────┤
-│  SubagentOrchestrator │  WaveScheduler      │
-│  - task() 调用        │  - 波次生成         │
-│  - skill 组合        │  - 依赖解析         │
-│  - 错误处理          │  - 并行调度         │
+│  ClawHubClient       │  RemoteScanner       │
+│  - API 调用          │  - 远程 skill 发现   │
+│  - 搜索/列表         │  - 结果合并          │
 └─────────────────────────────────────────────┘
 ```
 
@@ -518,13 +505,13 @@ skills:
 
 | 指标 | 数值 |
 |------|------|
-| 测试 | 253 个，14 个套件，251 通过 |
+| 测试 | 310 个，全部通过 |
 | Oracle 架构评审 | 95/100（subagent）, 72/100（session） |
 | Subagent 可理解性 | 95/100 |
-| 发现的 skill | 103 个 |
+| 发现的 skill | 103 个（本地） + ClawHub 远程发现 |
 | 预设 combo | 12 个（10 基础 + 2 subagent） |
 | 自动启用 | 每次会话自动加载 |
-| 版本 | 2.0.0 |
+| 版本 | 3.0.0 |
 
 ---
 
