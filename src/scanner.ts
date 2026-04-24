@@ -198,6 +198,7 @@ export function parseSkillMarkdown(content: string, filePath: string): Skill {
     compatibility,
     load_skills,
     category_priority: 5,
+    source: 'local' as const,
   };
 }
 

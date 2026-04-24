@@ -465,4 +465,359 @@ describe('Registry', () => {
       expect(retrieved?.skills).toHaveLength(2);
     });
   });
+
+  // ─── Remote Skills Merge Tests ──────────────────────────────────────────
+
+  describe('mergeRemoteSkills', () => {
+    it('should add remote-only skills to registry with source=remote', () => {
+      const remoteSkills: Skill[] = [
+        {
+          id: 'remote-skill-1',
+          name: 'Remote Skill',
+          description: 'A remote-only skill',
+          location: '',
+          category: ['testing'],
+          capabilities: ['test'],
+          load_skills: [],
+          inputs: [],
+          outputs: [],
+          compatibility: [],
+          category_priority: 5,
+          source: 'remote',
+          remote: {
+            remoteSlug: 'remote-skill-1',
+            remoteStars: 42,
+          },
+        },
+      ];
+
+      registry.mergeRemoteSkills(remoteSkills);
+
+      const skill = registry.getSkill('remote-skill-1');
+      expect(skill).toBeDefined();
+      expect(skill?.source).toBe('remote');
+      expect(skill?.remote?.remoteSlug).toBe('remote-skill-1');
+    });
+
+    it('should merge remote metadata into existing local skill without changing source', () => {
+      registry.addSkill({
+        id: 'local-skill',
+        name: 'Local Skill',
+        description: 'Installed locally',
+        location: '/local/path',
+        category: ['dev'],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      const remoteSkills: Skill[] = [
+        {
+          id: 'local-skill',
+          name: 'Local Skill',
+          description: 'Installed locally',
+          location: '',
+          category: ['dev'],
+          capabilities: [],
+          load_skills: [],
+          inputs: [],
+          outputs: [],
+          compatibility: [],
+          category_priority: 5,
+          source: 'remote',
+          remote: {
+            remoteSlug: 'local-skill',
+            remoteStars: 99,
+            remoteVersion: '1.2.0',
+          },
+        },
+      ];
+
+      registry.mergeRemoteSkills(remoteSkills);
+
+      const skill = registry.getSkill('local-skill');
+      expect(skill).toBeDefined();
+      expect(skill?.source).toBe('local');
+      expect(skill?.remote?.remoteSlug).toBe('local-skill');
+      expect(skill?.remote?.remoteStars).toBe(99);
+      expect(skill?.remote?.remoteVersion).toBe('1.2.0');
+    });
+
+    it('should handle empty remote skills array', () => {
+      registry.addSkill({
+        id: 'existing',
+        name: 'Existing',
+        description: '',
+        location: '/path',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      registry.mergeRemoteSkills([]);
+
+      expect(registry.getAllSkills()).toHaveLength(1);
+    });
+
+    it('should preserve local skill name and description when merging', () => {
+      registry.addSkill({
+        id: 'my-skill',
+        name: 'My Local Name',
+        description: 'My local description',
+        location: '/local',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      registry.mergeRemoteSkills([
+        {
+          id: 'my-skill',
+          name: 'Remote Name',
+          description: 'Remote description',
+          location: '',
+          category: [],
+          capabilities: [],
+          load_skills: [],
+          inputs: [],
+          outputs: [],
+          compatibility: [],
+          category_priority: 5,
+          source: 'remote',
+          remote: { remoteSlug: 'my-skill' },
+        },
+      ]);
+
+      const skill = registry.getSkill('my-skill');
+      expect(skill?.name).toBe('My Local Name');
+      expect(skill?.description).toBe('My local description');
+    });
+  });
+
+  describe('getSkillsBySource', () => {
+    it('should return only local skills', () => {
+      registry.addSkill({
+        id: 'local-1',
+        name: 'Local 1',
+        description: '',
+        location: '/path',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      registry.addSkill({
+        id: 'remote-1',
+        name: 'Remote 1',
+        description: '',
+        location: '',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'remote',
+      });
+
+      const locals = registry.getSkillsBySource('local');
+      expect(locals).toHaveLength(1);
+      expect(locals[0].id).toBe('local-1');
+    });
+
+    it('should return only remote skills', () => {
+      registry.addSkill({
+        id: 'local-1',
+        name: 'Local 1',
+        description: '',
+        location: '/path',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      registry.mergeRemoteSkills([
+        {
+          id: 'remote-1',
+          name: 'Remote 1',
+          description: '',
+          location: '',
+          category: [],
+          capabilities: [],
+          load_skills: [],
+          inputs: [],
+          outputs: [],
+          compatibility: [],
+          category_priority: 5,
+          source: 'remote',
+          remote: { remoteSlug: 'remote-1' },
+        },
+      ]);
+
+      const remotes = registry.getSkillsBySource('remote');
+      expect(remotes).toHaveLength(1);
+      expect(remotes[0].id).toBe('remote-1');
+    });
+
+    it('should return empty array when no skills match source', () => {
+      registry.addSkill({
+        id: 'local-1',
+        name: 'Local 1',
+        description: '',
+        location: '/path',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      expect(registry.getSkillsBySource('remote')).toEqual([]);
+    });
+  });
+
+  describe('getInstalledSkills', () => {
+    it('should return local skills and merged skills (not remote-only)', () => {
+      registry.addSkill({
+        id: 'local-1',
+        name: 'Local 1',
+        description: '',
+        location: '/path',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      // Local skill that also has remote metadata (merged)
+      registry.addSkill({
+        id: 'merged-1',
+        name: 'Merged 1',
+        description: '',
+        location: '/path2',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+        remote: { remoteSlug: 'merged-1' },
+      });
+
+      // Remote-only skill
+      registry.mergeRemoteSkills([
+        {
+          id: 'remote-only-1',
+          name: 'Remote Only',
+          description: '',
+          location: '',
+          category: [],
+          capabilities: [],
+          load_skills: [],
+          inputs: [],
+          outputs: [],
+          compatibility: [],
+          category_priority: 5,
+          source: 'remote',
+          remote: { remoteSlug: 'remote-only-1' },
+        },
+      ]);
+
+      const installed = registry.getInstalledSkills();
+      expect(installed).toHaveLength(2);
+      expect(installed.map(s => s.id)).toContain('local-1');
+      expect(installed.map(s => s.id)).toContain('merged-1');
+      expect(installed.map(s => s.id)).not.toContain('remote-only-1');
+    });
+  });
+
+  describe('getRemoteOnlySkills', () => {
+    it('should return only remote-only skills (not installed locally)', () => {
+      registry.addSkill({
+        id: 'local-1',
+        name: 'Local',
+        description: '',
+        location: '/path',
+        category: [],
+        capabilities: [],
+        load_skills: [],
+        inputs: [],
+        outputs: [],
+        compatibility: [],
+        category_priority: 5,
+        source: 'local',
+      });
+
+      registry.mergeRemoteSkills([
+        {
+          id: 'remote-only-1',
+          name: 'Remote Only',
+          description: '',
+          location: '',
+          category: [],
+          capabilities: [],
+          load_skills: [],
+          inputs: [],
+          outputs: [],
+          compatibility: [],
+          category_priority: 5,
+          source: 'remote',
+          remote: { remoteSlug: 'remote-only-1' },
+        },
+        {
+          id: 'local-1', // This matches existing local, should NOT appear in remote-only
+          name: 'Local',
+          description: '',
+          location: '',
+          category: [],
+          capabilities: [],
+          load_skills: [],
+          inputs: [],
+          outputs: [],
+          compatibility: [],
+          category_priority: 5,
+          source: 'remote',
+          remote: { remoteSlug: 'local-1', remoteStars: 10 },
+        },
+      ]);
+
+      const remoteOnly = registry.getRemoteOnlySkills();
+      expect(remoteOnly).toHaveLength(1);
+      expect(remoteOnly[0].id).toBe('remote-only-1');
+    });
+  });
 });

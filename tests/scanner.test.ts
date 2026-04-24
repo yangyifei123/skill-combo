@@ -279,4 +279,36 @@ category: testing, unit
       expect(capabilities.some((c: string) => c.includes('data processing'))).toBeTruthy();
     });
   });
+
+  describe('source field - local skills', () => {
+    it('should set source to "local" on parsed skills', () => {
+      const content = `# Test Skill\n\nA test skill description.`;
+      const skill = parseSkillMarkdown(content, '/fake/path/skills/test-skill/SKILL.md');
+
+      expect(skill.source).toBe('local');
+    });
+
+    it('should set source to "local" even for malformed SKILL.md', () => {
+      const content = '';
+      const skill = parseSkillMarkdown(content, '/fake/path/test/SKILL.md');
+
+      expect(skill.source).toBe('local');
+    });
+
+    it('should set source to "local" for skills with categories and capabilities', () => {
+      const content = `# Full Skill\n\nA complete skill.\n\ncategory: web\ncapabilities: everything`;
+      const skill = parseSkillMarkdown(content, '/fake/path/skills/full-skill/SKILL.md');
+
+      expect(skill.source).toBe('local');
+      expect(skill.category).toContain('web');
+    });
+
+    it('should not have remote field for local skills', () => {
+      const content = `# Local Skill\n\nJust local.`;
+      const skill = parseSkillMarkdown(content, '/fake/path/skills/local-skill/SKILL.md');
+
+      expect(skill.source).toBe('local');
+      expect(skill.remote).toBeUndefined();
+    });
+  });
 });
