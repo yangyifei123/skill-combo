@@ -16,4 +16,7 @@ export { OpenCodeTaskInvoker, MockTaskInvoker, createTaskInvoker } from './task-
 export { OpenCodeSessionProvider, JsonlSessionProvider, createSessionProvider } from './session-provider';
 export { PatternMiner } from './pattern-miner';
 export { SkillGenerator } from './skill-generator';
+export { ClawHubClient, RateLimiter } from './clawhub-client';
+export { RemoteScanner } from './remote-scanner';
+export type { SkillSource, RemoteSkillMeta, ClawHubSkillItem, ClawHubSkillListResponse, ClawHubSkillSearchResponse, RemoteScanOptions, RemoteScanResult, RemoteScanError } from './types';
 export * from './types';
