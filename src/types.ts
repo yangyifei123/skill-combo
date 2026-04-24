@@ -20,6 +20,10 @@ export interface Skill {
   /** Skills that work well with this one (for combo planning) */
   compatibility: string[];
   category_priority: number;
+  /** Skill origin source - local (installed) or remote (ClawHub catalog) */
+  source?: SkillSource;
+  /** Remote metadata if skill is from ClawHub (composition pattern) */
+  remote?: RemoteSkillMeta;
 }
 
 /**
@@ -563,4 +567,105 @@ export interface SessionProvider {
   getSession(id: string): Promise<SessionSummary | null>;
   /** Check if provider is available */
   isAvailable(): boolean;
+}
+
+// ─── ClawHub Remote Skill Types ───────────────────────────────────
+
+/** Skill origin source */
+export type SkillSource = 'local' | 'remote';
+
+/** Remote skill metadata (composition, not flat fields on Skill) */
+export interface RemoteSkillMeta {
+  /** ClawHub slug (unique identifier) */
+  remoteSlug: string;
+  /** Latest version on ClawHub */
+  remoteVersion?: string;
+  /** Owner handle */
+  remoteOwner?: string;
+  /** Star count */
+  remoteStars?: number;
+  /** Download count (all time) */
+  remoteDownloads?: number;
+  /** When this metadata was fetched (epoch ms) */
+  remoteFetchedAt?: number;
+}
+
+/** ClawHub API skill item (from GET /api/v1/skills) */
+export interface ClawHubSkillItem {
+  slug: string;
+  displayName: string;
+  summary?: string;
+  tags?: Record<string, string>;
+  latestVersion?: {
+    version: string;
+    createdAt: number;
+    changelog?: string;
+  } | null;
+  metadata?: {
+    os?: string[] | null;
+    systems?: string[] | null;
+  } | null;
+  createdAt: number;
+  updatedAt: number;
+  owner?: {
+    handle?: string | null;
+    displayName?: string | null;
+    image?: string | null;
+  } | null;
+  stats?: {
+    stars?: number;
+    downloads?: number;
+    installsCurrent?: number;
+    installsAllTime?: number;
+  } | null;
+}
+
+/** ClawHub API list response */
+export interface ClawHubSkillListResponse {
+  items: ClawHubSkillItem[];
+  nextCursor?: string | null;
+}
+
+/** ClawHub API search response */
+export interface ClawHubSkillSearchResponse {
+  results: Array<{
+    score: number;
+    slug: string;
+    displayName: string;
+    summary?: string;
+    version?: string;
+    updatedAt?: number;
+  }>;
+  total?: number;
+}
+
+/** Remote scan options */
+export interface RemoteScanOptions {
+  limit?: number;
+  force?: boolean;
+  sort?: 'updated' | 'downloads' | 'stars' | 'trending';
+  search?: string;
+}
+
+/** Remote scan error */
+export interface RemoteScanError {
+  type: 'network' | 'rate-limit' | 'auth' | 'parse' | 'unknown';
+  message: string;
+  retryable: boolean;
+  retryAfter?: number;
+}
+
+/** Remote scan result */
+export interface RemoteScanResult {
+  skills: Skill[];
+  errors: RemoteScanError[];
+  timestamp: number;
+  cached: boolean;
+  source: 'clawhub';
+}
+
+/** Rate limiter configuration */
+export interface RateLimiterConfig {
+  maxTokens: number;
+  refillPerSecond: number;
 }
