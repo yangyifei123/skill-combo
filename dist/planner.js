@@ -3,6 +3,7 @@
 // Supports skill load_skills dependencies with topological sort
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Planner = void 0;
+const wave_scheduler_1 = require("./wave-scheduler");
 /**
  * Planner creates execution plans from combos
  * Respects skill load_skills dependencies via topological sort
@@ -10,7 +11,15 @@ exports.Planner = void 0;
 class Planner {
     constructor() { }
     /**
-     * Create an execution plan from a combo
+     * Create a subagent execution plan from a SubagentCombo
+     * Uses WaveScheduler to build dependency-ordered waves
+     */
+    planSubagent(combo) {
+        const scheduler = new wave_scheduler_1.WaveScheduler();
+        return scheduler.schedule(combo);
+    }
+    /**
+      * Create an execution plan from a combo
      * Uses topological sort to respect load_skills dependencies
      */
     plan(combo, skills) {

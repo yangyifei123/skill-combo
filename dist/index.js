@@ -16,7 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.colorize = exports.supportsColor = exports.bold = exports.dim = exports.info = exports.warning = exports.error = exports.success = exports.computeCacheKey = exports.MemoryCache = exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.loadDefaultCombos = exports.loadCombosFromDirectory = exports.loadComboFromFile = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
+exports.RemoteScanner = exports.RateLimiter = exports.ClawHubClient = exports.SkillGenerator = exports.PatternMiner = exports.createSessionProvider = exports.JsonlSessionProvider = exports.OpenCodeSessionProvider = exports.createTaskInvoker = exports.MockTaskInvoker = exports.OpenCodeTaskInvoker = exports.WaveScheduler = exports.SubagentOrchestrator = exports.colorize = exports.supportsColor = exports.bold = exports.dim = exports.info = exports.warning = exports.error = exports.success = exports.computeCacheKey = exports.MemoryCache = exports.parseSkillMarkdown = exports.parseSkillFile = exports.scanSkills = exports.loadDefaultCombos = exports.loadCombosFromDirectory = exports.loadComboFromFile = exports.createOpenCodeInvoker = exports.OpenCodeInvoker = exports.Registry = exports.Planner = exports.Engine = exports.DefaultInvoker = exports.CLI = void 0;
 var cli_1 = require("./cli");
 Object.defineProperty(exports, "CLI", { enumerable: true, get: function () { return cli_1.CLI; } });
 Object.defineProperty(exports, "DefaultInvoker", { enumerable: true, get: function () { return cli_1.DefaultInvoker; } });
@@ -49,5 +49,26 @@ Object.defineProperty(exports, "dim", { enumerable: true, get: function () { ret
 Object.defineProperty(exports, "bold", { enumerable: true, get: function () { return colors_1.bold; } });
 Object.defineProperty(exports, "supportsColor", { enumerable: true, get: function () { return colors_1.supportsColor; } });
 Object.defineProperty(exports, "colorize", { enumerable: true, get: function () { return colors_1.colorize; } });
+var subagent_orchestrator_1 = require("./subagent-orchestrator");
+Object.defineProperty(exports, "SubagentOrchestrator", { enumerable: true, get: function () { return subagent_orchestrator_1.SubagentOrchestrator; } });
+var wave_scheduler_1 = require("./wave-scheduler");
+Object.defineProperty(exports, "WaveScheduler", { enumerable: true, get: function () { return wave_scheduler_1.WaveScheduler; } });
+var task_invoker_1 = require("./task-invoker");
+Object.defineProperty(exports, "OpenCodeTaskInvoker", { enumerable: true, get: function () { return task_invoker_1.OpenCodeTaskInvoker; } });
+Object.defineProperty(exports, "MockTaskInvoker", { enumerable: true, get: function () { return task_invoker_1.MockTaskInvoker; } });
+Object.defineProperty(exports, "createTaskInvoker", { enumerable: true, get: function () { return task_invoker_1.createTaskInvoker; } });
+var session_provider_1 = require("./session-provider");
+Object.defineProperty(exports, "OpenCodeSessionProvider", { enumerable: true, get: function () { return session_provider_1.OpenCodeSessionProvider; } });
+Object.defineProperty(exports, "JsonlSessionProvider", { enumerable: true, get: function () { return session_provider_1.JsonlSessionProvider; } });
+Object.defineProperty(exports, "createSessionProvider", { enumerable: true, get: function () { return session_provider_1.createSessionProvider; } });
+var pattern_miner_1 = require("./pattern-miner");
+Object.defineProperty(exports, "PatternMiner", { enumerable: true, get: function () { return pattern_miner_1.PatternMiner; } });
+var skill_generator_1 = require("./skill-generator");
+Object.defineProperty(exports, "SkillGenerator", { enumerable: true, get: function () { return skill_generator_1.SkillGenerator; } });
+var clawhub_client_1 = require("./clawhub-client");
+Object.defineProperty(exports, "ClawHubClient", { enumerable: true, get: function () { return clawhub_client_1.ClawHubClient; } });
+Object.defineProperty(exports, "RateLimiter", { enumerable: true, get: function () { return clawhub_client_1.RateLimiter; } });
+var remote_scanner_1 = require("./remote-scanner");
+Object.defineProperty(exports, "RemoteScanner", { enumerable: true, get: function () { return remote_scanner_1.RemoteScanner; } });
 __exportStar(require("./types"), exports);
 //# sourceMappingURL=index.js.map

@@ -1,0 +1,26 @@
+# Task 11 E2E CLI Verification Evidence
+# Date: 2026-04-25
+
+## Commands Executed
+
+1. npm link: SUCCESS (changed 1 package in 1s)
+2. skill-combo --version: SUCCESS (outputs 3.0.0)
+3. skill-combo --help: SUCCESS (shows help)
+4. skill-combo scan: SUCCESS (no crash)
+5. npm run build: SUCCESS
+6. npm test: 310 PASS (16 test suites, 310 tests, 6.215s)
+
+## Verification Results
+- npm link: PASS
+- skill-combo --version: PASS (outputs 3.0.0)
+- skill-combo --help: PASS
+- skill-combo scan: PASS (no crash)
+- npm run build: PASS
+- npm test: PASS (310 pass)
+
+## Issues Found (DOCUMENTED ONLY - NOT FIXED)
+1. Flaky rate limiter test at tests/clawhub-client.test.ts:436
+   - Timing-dependent: Expected <= 179, Received 179.003
+   - Passed on re-run
+
+## Verification Complete

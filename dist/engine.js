@@ -4,6 +4,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Engine = void 0;
 const types_1 = require("./types");
+const subagent_orchestrator_1 = require("./subagent-orchestrator");
+const task_invoker_1 = require("./task-invoker");
 const cache_1 = require("./cache");
 /**
  * Engine implements IEngine for skill combo orchestration
@@ -68,6 +70,18 @@ class Engine {
                     default:
                         throw new Error(`Unknown execution mode: ${combo.execution}`);
                 }
+            }
+            case 'subagent': {
+                // Subagent combo: spawn subagents with loaded skills via task()
+                const subagentCombo = combo;
+                const taskInvoker = (0, task_invoker_1.createTaskInvoker)();
+                const orchestrator = new subagent_orchestrator_1.SubagentOrchestrator({
+                    maxContextSize: this.config.maxContextSize,
+                    defaultTimeout: this.config.skillTimeout,
+                    maxRetries: this.config.maxRetries,
+                    retryDelayMs: this.config.retryDelayMs,
+                });
+                return orchestrator.execute(subagentCombo, taskInvoker);
             }
             default:
                 throw new Error(`Unknown combo type: ${combo.type}`);

@@ -132,6 +132,10 @@ export declare class CLI {
      * Print detailed help for combos command
      */
     printCombosHelp(): void;
+    /**
+     * Print detailed help for search command
+     */
+    printSearchHelp(): void;
 }
 /**
  * Default invoker that provides mock execution for testing

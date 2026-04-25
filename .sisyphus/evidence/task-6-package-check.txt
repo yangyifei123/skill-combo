@@ -1,0 +1,12 @@
+bin: PASS -> {"skill-combo":"./bin/skill-combo.js"}
+engines: PASS -> {"node":">=18.0.0"}
+files: PASS -> ["dist/","bin/","config/","combos/"]
+repository: PASS -> {"type":"git","url":"https://github.com/yangyifei123/skill-combo.git"}
+keywords: PASS -> ["opencode","skill","combo","orchestration","automation","workflow","opencode-plugin","skill-orchestration","ai-agent","chain","subagent","productivity","dev-tools"]
+keywords_count: 13 PASS
+version: 3.0.0 PASS
+main_preserved: dist/index.js PASS
+types_preserved: dist/index.d.ts PASS
+exports_preserved: 7 entries PASS
+scripts_preserved: PASS
+deps_unchanged: PASS

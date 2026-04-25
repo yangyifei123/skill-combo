@@ -212,6 +212,7 @@ function parseSkillMarkdown(content, filePath) {
         compatibility,
         load_skills,
         category_priority: 5,
+        source: 'local',
     };
 }
 function extractNameFromPath(filePath) {

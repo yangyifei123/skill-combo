@@ -1,36 +1,59 @@
 {
   "name": "skill-combo",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Skill orchestration framework for OpenCode - chain skills like fighting game combos",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "skill-combo": "./bin/skill-combo.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/",
+    "bin/",
+    "config/",
+    "combos/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yangyifei123/skill-combo.git"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./engine": {
       "import": "./dist/engine.js",
+      "require": "./dist/engine.js",
       "types": "./dist/engine.d.ts"
     },
     "./scanner": {
       "import": "./dist/scanner.js",
+      "require": "./dist/scanner.js",
       "types": "./dist/scanner.d.ts"
     },
     "./registry": {
       "import": "./dist/registry.js",
+      "require": "./dist/registry.js",
       "types": "./dist/registry.d.ts"
     },
     "./cli": {
       "import": "./dist/cli.js",
+      "require": "./dist/cli.js",
       "types": "./dist/cli.d.ts"
     },
     "./cache": {
       "import": "./dist/cache.js",
+      "require": "./dist/cache.js",
       "types": "./dist/cache.d.ts"
     },
     "./colors": {
       "import": "./dist/colors.js",
+      "require": "./dist/colors.js",
       "types": "./dist/colors.d.ts"
     }
   },
@@ -47,7 +70,16 @@
     "opencode",
     "skill",
     "combo",
-    "orchestration"
+    "orchestration",
+    "automation",
+    "workflow",
+    "opencode-plugin",
+    "skill-orchestration",
+    "ai-agent",
+    "chain",
+    "subagent",
+    "productivity",
+    "dev-tools"
   ],
   "author": "Sisyphus",
   "license": "MIT",

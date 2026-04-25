@@ -191,6 +191,42 @@ class Registry {
         this.last_scan = Date.now();
     }
     /**
+     * Merge remote skills into the registry.
+     * - If a local skill with same id exists: attach remote metadata, keep source='local'
+     * - If not exists: add as source='remote'
+     */
+    mergeRemoteSkills(remoteSkills) {
+        for (const remoteSkill of remoteSkills) {
+            const existing = this.skills.get(remoteSkill.id);
+            if (existing) {
+                // Local exists: attach remote metadata, preserve local fields
+                existing.remote = remoteSkill.remote;
+            }
+            else {
+                // Not installed: add as remote-only
+                this.skills.set(remoteSkill.id, { ...remoteSkill, source: 'remote' });
+            }
+        }
+    }
+    /**
+     * Get skills filtered by source
+     */
+    getSkillsBySource(source) {
+        return this.getAllSkills().filter(skill => skill.source === source);
+    }
+    /**
+     * Get installed skills (source='local')
+     */
+    getInstalledSkills() {
+        return this.getAllSkills().filter(skill => skill.source === 'local');
+    }
+    /**
+     * Get remote-only skills (source='remote')
+     */
+    getRemoteOnlySkills() {
+        return this.getAllSkills().filter(skill => skill.source === 'remote');
+    }
+    /**
      * Clear all skills and combos
      */
     clear() {

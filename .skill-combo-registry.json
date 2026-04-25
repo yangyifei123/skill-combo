@@ -1,0 +1,2375 @@
+{
+  "skills": [
+    {
+      "id": "api-rest-design",
+      "name": "API REST Design Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\api-rest-design\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "| Validation errors |",
+        "Validation",
+        "- ✅ Use consistent naming conventions"
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "asdf",
+      "name": "asdf Version Manager Skill",
+      "description": "asdf is a universal CLI version manager — one tool to replace nvm, pyenv, rbenv, tfenv, goenv and more. It manages per-project versions via `.tool-versions` files and switches versions automatically a",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\asdf\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "bug-fixing",
+      "name": "Bug Fixing Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\bug-fixing\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "it crash?",
+        "it fix the reported issue?",
+        "it fix the root cause?",
+        "it work for all cases?"
+      ],
+      "inputs": [
+        "```"
+      ],
+      "outputs": [
+        "the bug"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "caveman",
+      "name": "caveman",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\caveman\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "caveman-commit",
+      "name": "caveman-commit",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\caveman-commit\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "X\"",
+        "\"I\"",
+        "\"we\"",
+        "\"now\"",
+        "\"currently\" — the diff says what",
+        "not run `git commit`",
+        "does not stage files",
+        "does not amend. Output the message as a code block ready to paste. \"stop caveman-commit\" or \"normal mode\": revert to verbose commit style."
+      ],
+      "inputs": [],
+      "outputs": [
+        "the commit message. Does not run `git commit`",
+        "does not stage files",
+        "does not amend. Output the message as a code block ready to paste. \"stop caveman-commit\" or \"normal mode\": revert to verbose commit style."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "caveman-review",
+      "name": "caveman-review",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\caveman-review\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "— the reviewer can read the diff",
+        "4 things. Extract validate/normalize/persist.`",
+        "not write the code fix",
+        "does not approve/request-changes",
+        "does not run linters. Output the comment(s) ready to paste into the PR. \"stop caveman-review\" or \"normal mode\": revert to verbose review style."
+      ],
+      "inputs": [],
+      "outputs": [
+        "the comment(s) ready to paste into the PR. \"stop caveman-review\" or \"normal mode\": revert to verbose review style."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "ci-cd-pipelines",
+      "name": "CI/CD Pipelines Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\ci-cd-pipelines\\SKILL.md",
+      "category": [
+        "|"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "'trivy-results.sarif'"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "cli-anything-wechat",
+      "name": "WeChat CLI",
+      "description": "Control WeChat (微信) from the command line.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\cli-anything-wechat\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "Add `--json` flag for machine-readable output:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "code-docs",
+      "name": "Code Documentation Standards",
+      "description": "Apply Google Style documentation standards to Python (docstrings), Go (comments), and Terraform (descriptions). Ensures consistent, professional, and comprehensive code documentation across multiple l",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\code-docs\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "stuff\")"
+      ],
+      "inputs": [],
+      "outputs": [
+        "descriptions. Enforces consistent",
+        "professional documentation standards.",
+        "descriptions",
+        "(description field)",
+        "- Standard resource configurations",
+        "Format",
+        "description format"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "code-documentation",
+      "name": "Code Documentation Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\code-documentation\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "not exist in the database."
+      ],
+      "inputs": [
+        "is invalid"
+      ],
+      "outputs": [
+        "a new user in the system.",
+        "Created user: John Doe"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "content-research-writer",
+      "name": "Content Research Writer",
+      "description": "This skill acts as your writing partner, helping you research, outline, draft, and refine content while maintaining your unique voice and style.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\content-research-writer\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "1. **Collaborative Outlining**: Helps you structure ideas into coherent outlines",
+        "it create curiosity?",
+        "it promise value?",
+        "it match the audience?",
+        "this sound like you?\"",
+        "this flow logically?\""
+      ],
+      "inputs": [],
+      "outputs": [
+        "```markdown"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "context7",
+      "name": "Context7",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\context7\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "- Use `jq` to filter and format JSON responses"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "datadog",
+      "name": "Datadog",
+      "description": "This skill will help you to interact with Datadog, through the unofficial datadog-cli to search Datadog logs, query metrics, tail logs in real-time, trace distributed requests, investigate errors, com",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\datadog\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "with colors |",
+        "<file>` | Export results to JSON file |",
+        "errors.json",
+        "error-report.json"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "docker-patterns",
+      "name": "Docker Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\docker-patterns\\SKILL.md",
+      "category": [
+        "(not",
+        "`latest`)",
+        "FROM",
+        "node:18.19.0-alpine3.18"
+      ],
+      "capabilities": [
+        "### 3. Layer Caching"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feature-development",
+      "name": "Feature Development Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\feature-development\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "this solve?",
+        "\"done\" look like?",
+        "it meet requirements?"
+      ],
+      "inputs": [
+        "validation",
+        "auth)"
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "file-organizer",
+      "name": "File Organizer",
+      "description": "This skill acts as your personal organization assistant, helping you maintain a clean, logical file structure across your computer without the mental overhead of constant manual organization.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\file-organizer\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "1. **Analyzes Current Structure**: Reviews your folders and files to understand what you have"
+      ],
+      "inputs": [],
+      "outputs": [
+        "structure like:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "frontend-design",
+      "name": "frontend-design",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\frontend-design\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "this interface solve? Who uses it?"
+      ],
+      "inputs": [],
+      "outputs": [
+        "creative",
+        "polished code and UI design that avoids generic AI aesthetics.",
+        "more delight than scattered micro-interactions. Use scroll-triggering and hover states that surprise."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "git-commit",
+      "name": "git-commit",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\git-commit\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "git-release",
+      "name": "git-release",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\git-release\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "git-team-workflow",
+      "name": "Git Team Workflow Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\git-team-workflow\\SKILL.md",
+      "category": [
+        "-a",
+        "v1.2.0",
+        "-m",
+        "\"Release",
+        "version",
+        "1.2.0\"",
+        "git",
+        "checkout",
+        "develop"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "glab",
+      "name": "GitLab CLI (glab) Skill",
+      "description": "Provides guidance for using `glab`, the official GitLab CLI, to perform GitLab operations from the terminal.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\glab\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "for parsing:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "go-conventions",
+      "name": "Go Conventions Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\go-conventions\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "humanizer",
+      "name": "Humanizer: Remove AI Writing Patterns",
+      "description": "You are a writing editor that identifies and removes signs of AI-generated text to make writing sound more natural and human. This guide is based on Wikipedia's \"Signs of AI writing\" page, maintained ",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\humanizer\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "innovation",
+        "inspiration",
+        "and industry insights.",
+        "text carefully"
+      ],
+      "outputs": [
+        "lists where items start with bolded headers followed by colons.",
+        "Format"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "jira",
+      "name": "Jira",
+      "description": "Natural language interaction with Jira. Supports multiple backends.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\jira\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "kubernetes-patterns",
+      "name": "Kubernetes Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\kubernetes-patterns\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "drop:"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "marp-slide",
+      "name": "Marp Slide Creator",
+      "description": "Create professional, visually appealing Marp presentation slides with 7 pre-designed themes and built-in best practices.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\marp-slide\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "file**",
+        "Always save the final Marp file to `/mnt/user-data/outputs/` with `.md` extension:",
+        "directory"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "mcp-builder",
+      "name": "MCP Server Development Guide",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\mcp-builder\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "- Detailed explanation of purpose and functionality",
+        "2. **Content Exploration**: Use READ-ONLY operations to explore available data"
+      ],
+      "inputs": [
+        "validation models (Pydantic for Python",
+        "Zod for TypeScript)",
+        "validation",
+        "Schema:**"
+      ],
+      "outputs": [
+        "event)",
+        "Design:**",
+        "Format"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "meeting-insights-analyzer",
+      "name": "Meeting Insights Analyzer",
+      "description": "This skill transforms your meeting transcripts into actionable insights about your communication patterns, helping you become a more effective communicator and leader.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\meeting-insights-analyzer\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "1. **Pattern Recognition**: Identifies recurring behaviors across meetings like:"
+      ],
+      "inputs": [],
+      "outputs": [
+        "a comparative analysis showing:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "mermaid-diagrams",
+      "name": "Mermaid Diagramming",
+      "description": "Create professional software diagrams using Mermaid's text-based syntax. Mermaid renders diagrams from simple text definitions, making diagrams version-controllable, easy to update, and maintainable a",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\mermaid-diagrams\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "class Title {"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "microservices-patterns",
+      "name": "Microservices Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\microservices-patterns\\SKILL.md",
+      "category": [
+        "-",
+        "orders"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "mongodb-patterns",
+      "name": "MongoDB Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\mongodb-patterns\\SKILL.md",
+      "category": [
+        "1",
+        "price:",
+        "});",
+        "\"premium\"",
+        "}",
+        "//",
+        "Add",
+        "if",
+        "not",
+        "exists"
+      ],
+      "capabilities": [],
+      "inputs": [
+        "\"$items\""
+      ],
+      "outputs": [
+        "{"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "notion",
+      "name": "notion",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\notion\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "observability-monitoring",
+      "name": "Observability & Monitoring Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\observability-monitoring\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw 自媒体运营 Skill",
+      "description": "openclaw agents list                          # 查看所有Agent",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\openclaw\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "performance-optimization",
+      "name": "Performance Optimization Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\performance-optimization\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "postgresql-patterns",
+      "name": "PostgreSQL Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\postgresql-patterns\\SKILL.md",
+      "category": [
+        "("
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "project-docs",
+      "name": "Project Documentation Generator",
+      "description": "Generate complete, professional documentation structures for software projects. Automatically adapts content and structure based on project language (Python/Go), context (OpenSource/internal), and exi",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\project-docs\\SKILL.md",
+      "category": [
+        "-",
+        "Include",
+        "\"Quick",
+        "Start\"",
+        "section",
+        "at",
+        "top"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "Place all files in `docs/` and use `present_files` to share with user."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "python-patterns",
+      "name": "Python Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\python-patterns\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "validation fails.\"\"\""
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "refactoring-safely",
+      "name": "Safe Refactoring Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\refactoring-safely\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "rust-patterns",
+      "name": "Rust Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\rust-patterns\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "&'a str",
+        "&'a str) -> Self {",
+        "}"
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "security-best-practices",
+      "name": "Security Best Practices Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\security-best-practices\\SKILL.md",
+      "category": [
+        "-",
+        "**[Secure",
+        "Coding",
+        "Python](references/secure-coding-python.md)**",
+        "Python-specific",
+        "security",
+        "patterns"
+      ],
+      "capabilities": [],
+      "inputs": [
+        "into SQL/commands",
+        "Validation",
+        "on server side",
+        "os.system(f\"ls -la {directory}\")",
+        "and data validation"
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "skill-creator",
+      "name": "Skill Creator",
+      "description": "This skill provides guidance for creating effective skills.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\skill-creator\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "with specialized knowledge",
+        "workflows",
+        "or tool integrations.",
+        "by providing",
+        "Claude really need this explanation?\" and \"Does this paragraph justify its token cost?\"",
+        "and specific triggers/contexts for when to use it."
+      ],
+      "inputs": [],
+      "outputs": [
+        "(templates",
+        "icons",
+        "fonts",
+        "etc.)",
+        "Claude produces.",
+        "- **Examples**: `assets/logo.png` for brand assets",
+        "`assets/slides.pptx` for PowerPoint templates",
+        "`assets/frontend-template/` for HTML/React boilerplate",
+        "`assets/font.ttf` for typography",
+        "resources from documentation",
+        "enables Claude to use files without loading them into context",
+        "a new template skill directory that automatically includes everything a skill requires",
+        "making the skill creation process much more efficient and reliable.",
+        "the skill directory at the specified path",
+        "a SKILL.md template with proper frontmatter and TODO placeholders",
+        "example resource directories: `scripts/`",
+        "`references/`",
+        "and `assets/`",
+        "formats or quality standards**: See references/output-patterns.md for template and example patterns",
+        "matches what is expected. If there are many similar scripts",
+        "only a representative sample needs to be tested to ensure confidence that they all work while balancing time to completion.",
+        "example files in `scripts/`",
+        "and `assets/` to demonstrate structure",
+        "but most skills won't need all of them.",
+        "directory specification:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "skill-judge",
+      "name": "Skill Judge",
+      "description": "Evaluate Agent Skills against official specifications and patterns derived from 17+ official examples.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\skill-judge\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "```",
+        "| Execute actions | bash",
+        "read_file",
+        "write_file",
+        "WebSearch |",
+        "boundaries — without bash tool",
+        "model can't execute commands.",
+        "the Skill add genuine expert knowledge?",
+        "Claude already know this?\"",
+        "the Skill transfer expert **thinking patterns** along with **necessary domain-specific procedures**?",
+        "this solve? Who uses it?",
+        "it tell Claude WHAT to think about? (thinking patterns)",
+        "it tell Claude HOW to do things it wouldn't know? (domain procedures)",
+        "the Skill have effective NEVER lists?",
+        "the Skill follow official format requirements? **Special focus on description quality.**",
+        "this Skill do? (functionality)",
+        "(not just \"helps with X\")",
+        "the Skill implement proper content layering?",
+        "the Skill follow an established official pattern?",
+        "it do?                            │"
+      ],
+      "inputs": [],
+      "outputs": [
+        "generic UI."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "sqlserver-patterns",
+      "name": "SQL Server Patterns Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\sqlserver-patterns\\SKILL.md",
+      "category": [
+        "("
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "inserted.Id",
+        "$action AS Action",
+        "UPDATE Users",
+        "inserted.LastLoginAt",
+        "DELETE FROM TempLogs",
+        "deleted.Id",
+        "AS"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "task-management",
+      "name": "Task Management Skill",
+      "description": "> **Purpose**: Track, manage, and validate feature implementations with atomic task breakdowns, dependency resolution, and progress monitoring.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\task-management\\SKILL.md",
+      "category": [
+        "development",
+        "-",
+        "tasks"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "task files using this format. When you delegate to TaskManager:",
+        "1. `.tmp/tasks/{feature}/task.json` - Feature metadata",
+        "tasks** → Generates `.tmp/tasks/{feature}/` structure",
+        "the task structure"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "testing-strategies",
+      "name": "Testing Strategies Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\testing-strategies\\SKILL.md",
+      "category": [
+        "```go",
+        "//go:build",
+        "integration"
+      ],
+      "capabilities": [],
+      "inputs": [
+        "} from '@playwright/test'"
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "ts-react-nextjs",
+      "name": "TypeScript React Next.js Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\ts-react-nextjs\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "value={query}",
+        "{...register('name')} />",
+        "{...register('email')} />",
+        "type=\"number\" {...register('age'",
+        "{ valueAsNumber: true })} />"
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "ts-vue-svelte",
+      "name": "TypeScript Vue Svelte Skill",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\ts-vue-svelte\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "type=\"checkbox\""
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "work-on-ticket",
+      "name": "Work on Ticket",
+      "description": "Streamlined workflow to start work on a Jira ticket by fetching ticket details, creating a branch, and initiating task planning.",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\work-on-ticket\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "- Code should be self-documenting through clear variable names",
+        "function names",
+        "and structure",
+        "**CRITICAL RULE - VITEST TESTING:**"
+      ],
+      "inputs": [],
+      "outputs": [
+        "an appropriately named branch",
+        "and initiates the task planning workflow. Use when the user says \"work on [TICKET_ID]\" or similar phrases.",
+        "branch: `AGP-782-migrate-existing-mcp-server`"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "worktrunk",
+      "name": "Worktrunk Skill",
+      "description": "Worktrunk (`wt`) is a CLI for git worktree management designed to run AI agents",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\worktrunk\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "### 3. Parallel Agents Pattern"
+      ],
+      "outputs": [
+        "```",
+        "|"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "writing-clearly-and-concisely",
+      "name": "Writing Clearly and Concisely",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.config\\opencode\\skills\\writing-clearly-and-concisely\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "- **Promotional adjectives:** groundbreaking",
+        "seamless",
+        "robust",
+        "cutting-edge"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "1password-1-0-1",
+      "name": "1Password CLI",
+      "description": "Follow the official CLI get-started steps. Don't guess install commands.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\1password-1.0.1\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "app prompt)."
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "a-stock-analysis-1-0-0",
+      "name": "A股实时行情与分时量能分析",
+      "description": "使用东方财富和新浪财经接口获取A股数据，支持实时行情、分时K线、量能分析。",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\a-stock-analysis-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "agent-browser",
+      "name": "Browser Automation with agent-browser",
+      "description": "The CLI uses Chrome/Chromium via CDP directly. Install via `npm i -g agent-browser`, `brew install agent-browser`, or `cargo install agent-browser`. Run `agent-browser install` to download Chrome. Exi",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\agent-browser\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "not support `--extension`",
+        "`--profile`",
+        "`--state`",
+        "or `--allow-file-access`. Install Lightpanda from https://lightpanda.io/docs/open-source/installation."
+      ],
+      "inputs": [
+        "type=\"email\"]",
+        "@e2 [input type=\"password\"]",
+        "@e3 [button] \"Submit\"",
+        "text"
+      ],
+      "outputs": [
+        "@e1 [input type=\"email\"]",
+        "@e2 [input type=\"password\"]",
+        "@e3 [button] \"Submit\"",
+        "of an intermediate command before proceeding (e.g.",
+        "open + wait + screenshot). Run commands separately when you need to parse the output first (e.g.",
+        "snapshot to discover refs",
+        "then interact using those refs).",
+        "between steps (e.g.",
+        "then interact).",
+        "for parsing",
+        "in markers that help LLMs distinguish tool output from untrusted page content:",
+        "# --- AGENT_BROWSER_PAGE_CONTENT nonce=<hex> origin=https://example.com ---",
+        "Limits",
+        "uses `+` for additions and `-` for removals",
+        "similar to git diff. `diff screenshot` produces a diff image with changed pixels highlighted in red",
+        "plus a mismatch percentage.",
+        "includes the image path and a legend:",
+        "for all sessions.",
+        "```"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "agent-self-reflection-1-0-0",
+      "name": "Self-Reflection Skill",
+      "description": "Reflect on recent sessions and extract actionable insights. Runs hourly via cron.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\agent-self-reflection-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "to get session keys and IDs. Skip subagent sessions (they're task workers",
+        "not interesting for reflection). Focus on:",
+        "— keep it to 2-4 sentences max."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "aminer-open-academic-1-0-5",
+      "name": "AMiner 开放平台学术数据查询",
+      "description": "AMiner 是全球领先的学术数据平台，提供学者、论文、机构、期刊、专利等全维度学术数据。",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\aminer-open-academic-1.0.5\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "architecture-designer-0-1-0",
+      "name": "Architecture Designer",
+      "description": "Senior software architect specializing in system design, design patterns, and architectural decision-making.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\architecture-designer-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "Templates"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "automation-workflows-0-1-0",
+      "name": "Automation Workflows",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\automation-workflows-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "incorrect data or missed tasks."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "backtest-expert-0-1-0",
+      "name": "Backtest Expert",
+      "description": "Systematic approach to backtesting trading strategies based on professional methodology that prioritizes robustness over optimistic results.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\backtest-expert-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "edge survive pessimistic assumptions?",
+        "strategy work in multiple market regimes?"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "blog-writer-0-1-0",
+      "name": "Blog Writer",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\blog-writer-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "requested content AND it is added to TS Notes with Type=Writing and Project=My Writing | Content delivered but NOT added to Notion |"
+      ],
+      "outputs": [
+        "authentic",
+        "opinionated content that matches the writer's voice—direct",
+        "conversational",
+        "and grounded in personal experience. The skill handles the complete workflow from research review through Notion publication. Use this skill for drafting blog posts",
+        "thought leadership pieces",
+        "or any writing meant to reflect the writer's perspective on AI",
+        "productivity",
+        "sales",
+        "marketing",
+        "or technology topics."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "brainstorming-0-1-0",
+      "name": "Brainstorming Ideas Into Designs",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\brainstorming-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "clawdefender-1",
+      "name": "ClawDefender",
+      "description": "Security toolkit for AI agents. Scans skills for malware, sanitizes external input, and blocks prompt injection attacks.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\clawdefender-1\\SKILL.md",
+      "category": [
+        "###",
+        "Prompt",
+        "Injection",
+        "(90+",
+        "patterns)"
+      ],
+      "capabilities": [],
+      "inputs": [
+        "sanitizer for AI agents. Detects prompt injection",
+        "command injection",
+        "SSRF",
+        "credential exfiltration",
+        "and path traversal attacks. Use when (1) installing new skills from ClawHub",
+        "(2) processing external input like emails",
+        "calendar events",
+        "Trello cards",
+        "or API responses",
+        "(3) validating URLs before fetching",
+        "(4) running security audits on your workspace. Protects agents from malicious content in untrusted data sources.",
+        "before processing",
+        "Sanitization (`sanitize.sh`)",
+        "Always pipe external content through sanitize.sh:"
+      ],
+      "outputs": [
+        "shows clean skills (✓) and flagged files with severity:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "code-1-0-4",
+      "name": "code-1.0.4",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\code-1.0.4\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "NOT:**"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "content-strategy-0-1-0",
+      "name": "Content Strategy",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\content-strategy-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "your ICP hang out? (B2B = LinkedIn. Developers = Twitter. Visual products = Instagram.)"
+      ],
+      "inputs": [],
+      "outputs": [
+        "** A list of 20-30 content ideas ranked by: (a) relevance to your ICP",
+        "(b) search volume or community demand",
+        "(c) your unique perspective or experience on the topic.",
+        "better quality."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "copywriting-0-1-0",
+      "name": "Copywriting",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\copywriting-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "(the fact)",
+        "— they care what it does FOR THEM."
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "debug-pro-1-0-0",
+      "name": "debug-pro",
+      "description": "Systematic debugging methodology and language-specific debugging commands.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\debug-pro-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "executing-plans-0-1-0",
+      "name": "Executing Plans",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\executing-plans-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "- Say: \"Ready for feedback.\""
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feishu-chat-history",
+      "name": "Feishu Chat History",
+      "description": "Fetch message history from a Feishu group chat and summarize or present it to the user.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\feishu-chat-history\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feishu-cron-reminder",
+      "name": "Feishu Cron Reminder",
+      "description": "通过 OpenClaw cron 创建定时任务，稳定投递提醒到飞书会话。",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\feishu-cron-reminder\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feishu-doc-1-2-7",
+      "name": "Feishu Doc Skill",
+      "description": "Fetch content from Feishu (Lark) Wiki, Docs, Sheets, and Bitable. Write and update documents.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\feishu-doc-1.2.7\\SKILL.md",
+      "category": [
+        "[feishu",
+        "lark",
+        "wiki",
+        "doc",
+        "sheet",
+        "document",
+        "reader",
+        "writer]"
+      ],
+      "capabilities": [
+        "- **Read**: Fetch content from Docs",
+        "Sheets",
+        "Bitable",
+        "and Wiki."
+      ],
+      "inputs": [],
+      "outputs": [
+        "limits of ~2000-4000 tokens):"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feishu-drive-1-0-0",
+      "name": "🚀 快速启动：三步打通云空间 (必读)",
+      "description": "为避免机器人文件进入“私有黑盒”，请在首次使用前完成以下配置：",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\feishu-drive-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feishu-perm",
+      "name": "Feishu Permission Tool",
+      "description": "Single tool `feishu_perm` for managing file/document permissions.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\feishu-perm\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feishu-screenshot",
+      "name": "Feishu Screenshot",
+      "description": "Capture macOS screenshots and send to Feishu conversations.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\feishu-screenshot\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "feishu-send-file",
+      "name": "Feishu Send File",
+      "description": "Send files to Feishu chats via REST API (bypasses the built-in message tool limitation for file messages).",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\feishu-send-file\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "ffmpeg-video-editor-1-0-0",
+      "name": "FFmpeg Video Editor",
+      "description": "You are a video editing assistant that translates natural language requests into FFmpeg commands. When the user asks to edit a video, generate the correct FFmpeg command.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\ffmpeg-video-editor-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "3. Mention if output filename was assumed"
+      ],
+      "inputs": [
+        "file",
+        "output file",
+        "timestamps",
+        "formats",
+        "etc.)"
+      ],
+      "outputs": [
+        "file",
+        "timestamps",
+        "formats",
+        "etc.)",
+        "filename not specified**",
+        "create one based on the operation (e.g.",
+        "`video_trimmed.mp4`)",
+        "---",
+        "filename was assumed",
+        "saved as `video_trimmed.mp4`."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "find-skills",
+      "name": "Find Skills",
+      "description": "This skill helps you discover and install skills from the open agent skills ecosystem.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\find-skills\\SKILL.md",
+      "category": [
+        "When",
+        "searching",
+        "consider",
+        "these",
+        "common",
+        "categories:",
+        "|",
+        "Example",
+        "Queries"
+      ],
+      "capabilities": [
+        "- Expresses interest in extending agent capabilities",
+        "with specialized knowledge",
+        "workflows",
+        "and tools.",
+        "2. The install command they can run",
+        "3. Suggest the user could create their own skill with `npx skills init`"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "frontend-design-3-0-1-0",
+      "name": "Frontend Design",
+      "description": "Create distinctive, production-grade frontend interfaces that avoid generic \"AI slop\" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\frontend-design-3-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "this interface solve? Who uses it?"
+      ],
+      "inputs": [],
+      "outputs": [
+        "creative",
+        "polished code that avoids generic AI aesthetics.",
+        "more delight than scattered micro-interactions.",
+        "Requirements"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "git-essentials-1-0-0",
+      "name": "Git Essentials",
+      "description": "Essential Git commands for version control and collaboration.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\git-essentials-1.0.0\\SKILL.md",
+      "category": [
+        "```bash",
+        "git",
+        "tag",
+        "v1.0.0",
+        "-a",
+        "-m",
+        "\"Version",
+        "1.0.0\"",
+        "specific",
+        "commit"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "interview-designer-1-0-0",
+      "name": "Interview Designer Skill",
+      "description": "> **Core Mission**: Elevate interview planning from \"glancing at resume and asking questions\" to \"evidence-based investigation and projection.\"",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\interview-designer-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "this role exist?"
+      ],
+      "inputs": [],
+      "outputs": [
+        "Format"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "market-research-1-0-0",
+      "name": "market-research-1.0.0",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\market-research-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "memory-1-0-2",
+      "name": "Memory 🧠",
+      "description": "**Superpowered memory that never forgets.**",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\memory-1.0.2\\SKILL.md",
+      "category": [
+        "do",
+        "they",
+        "need?",
+        "the",
+        "user",
+        "needs",
+        "overview",
+        "based",
+        "on",
+        "their"
+      ],
+      "capabilities": [
+        "NOT:**"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "obsidian-ontology-sync-1-0-1",
+      "name": "Obsidian-Ontology Sync",
+      "description": "**Philosophy:** Obsidian is PRIMARY (human writes natural notes) → Ontology is DERIVED (machine extracts structure) → Feedback loop improves both",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\obsidian-ontology-sync-1.0.1\\SKILL.md",
+      "category": [
+        "**",
+        "obsidian",
+        "ontology",
+        "knowledge-graph",
+        "pkm",
+        "automation",
+        "sync"
+      ],
+      "capabilities": [
+        "# 1. Scan configured Obsidian directories",
+        "**",
+        "# - Adds missing email field to contact notes"
+      ],
+      "inputs": [],
+      "outputs": [
+        "insights like:",
+        "# - Missing property suggestions",
+        "daily-insights.md with:",
+        "weekly feedback",
+        "suggestions for:",
+        "├── config.yaml        # Your config",
+        "suggested project files",
+        "backup before modifying files.",
+        "# - config.yaml with your vault path"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "opencode-controller-1-0-0",
+      "name": "Opencode Controller",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\opencode-controller-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "not write code."
+      ],
+      "inputs": [],
+      "outputs": [
+        "format"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "research-paper-writer-0-1-0",
+      "name": "Research Paper Writer",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\research-paper-writer-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "formal academic research papers following IEEE/ACM formatting standards with proper structure",
+        "citations",
+        "and scholarly writing style. Use when the user asks to write a research paper",
+        "academic paper",
+        "or conference paper on any topic."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "security-auditor-1-0-0",
+      "name": "Security Auditor",
+      "description": "Comprehensive security audit and secure coding specialist. Adapted from buildwithclaude by Dave Poon (MIT).",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\security-auditor-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "validation",
+        "SQL injection prevention",
+        "XSS protection",
+        "or any security-related code review.",
+        "role: specialist",
+        "validation** and encryption mechanisms",
+        "— validate everything rigorously",
+        "const user = await prisma.user.findUnique({ where: { email } })",
+        "never used in `eval()`",
+        "`Function()`",
+        "or template literals for code",
+        "<div dangerouslySetInnerHTML={{ __html: userComment }} />",
+        "Validation Patterns",
+        "concatenated into query"
+      ],
+      "outputs": [
+        "findings as:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "self-improving-1-1-3",
+      "name": "self-improving-1.1.3",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\self-improving-1.1.3\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "that could be better. Knowledge should compound over time without manual maintenance.",
+        "could be better"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "seo-1-0-3",
+      "name": "seo-1.0.3",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\seo-1.0.3\\SKILL.md",
+      "category": [
+        "(50-60",
+        "chars)",
+        "→",
+        "wasted",
+        "crawl",
+        "budget"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "seo-content-writer-2-0-0",
+      "name": "SEO Content Writer",
+      "description": "> **[SEO & GEO Skills Library](https://skills.sh/aaron-he-zhu/seo-geo-claude-skills)** · 20 skills for SEO + GEO · Install all: `npx skills add aaron-he-zhu/seo-geo-claude-skills`",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\seo-content-writer-2.0.0\\SKILL.md",
+      "category": [
+        "-",
+        "seo",
+        "placeholders.",
+        "[on-page-seo-auditor](../../optimize/on-page-seo-auditor/)",
+        "—",
+        "Audit",
+        "SEO",
+        "elements"
+      ],
+      "capabilities": [
+        "1. **Keyword Integration**: Naturally incorporates target and related keywords",
+        "be bullet points for scanability]"
+      ],
+      "inputs": [
+        "Validation"
+      ],
+      "outputs": [
+        "high-quality",
+        "SEO-optimized content that ranks in search engines. Applies on-page SEO best practices",
+        "keyword optimization",
+        "and content structure for maximum visibility and engagement. For AI citation optimization",
+        "see geo-content-optimizer. For updating existing content",
+        "see content-refresher.'",
+        "search-engine-optimized content that ranks well while providing genuine value to readers. It applies proven SEO copywriting techniques",
+        "proper keyword integration",
+        "and optimal content structure.",
+        "scannable",
+        "well-organized content",
+        "which metrics are from automated collection vs. user-provided data.",
+        "Validation",
+        "much better results."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "session-logs-1-0-0",
+      "name": "session-logs",
+      "description": "Search your complete conversation history stored in session JSONL files. Use this when a user references older/parent conversations or asks what was said before.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\session-logs-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "short-video-production",
+      "name": "Short Video Production (短视频制作)",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\short-video-production\\SKILL.md",
+      "category": [
+        "(not",
+        "spammy)",
+        "for",
+        "search"
+      ],
+      "capabilities": [
+        "- Content is fundamentally audio-first and doesn't benefit from visuals (podcast-style content)"
+      ],
+      "inputs": [],
+      "outputs": [
+        "mystery",
+        "must watch to learn |",
+        "connection)"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "skill-creator-0-1-0",
+      "name": "Skill Creator",
+      "description": "This skill provides guidance for creating effective skills.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\skill-creator-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "with specialized knowledge",
+        "workflows",
+        "or tool integrations.",
+        "by providing",
+        "Claude really need this explanation?\" and \"Does this paragraph justify its token cost?\"",
+        "and specific triggers/contexts for when to use it."
+      ],
+      "inputs": [],
+      "outputs": [
+        "(templates",
+        "icons",
+        "fonts",
+        "etc.)",
+        "Claude produces.",
+        "- **Examples**: `assets/logo.png` for brand assets",
+        "`assets/slides.pptx` for PowerPoint templates",
+        "`assets/frontend-template/` for HTML/React boilerplate",
+        "`assets/font.ttf` for typography",
+        "resources from documentation",
+        "enables Claude to use files without loading them into context",
+        "a new template skill directory that automatically includes everything a skill requires",
+        "making the skill creation process much more efficient and reliable.",
+        "the skill directory at the specified path",
+        "a SKILL.md template with proper frontmatter and TODO placeholders",
+        "example resource directories: `scripts/`",
+        "`references/`",
+        "and `assets/`",
+        "formats or quality standards**: See references/output-patterns.md for template and example patterns",
+        "matches what is expected. If there are many similar scripts",
+        "only a representative sample needs to be tested to ensure confidence that they all work while balancing time to completion.",
+        "example files in `scripts/`",
+        "and `assets/` to demonstrate structure",
+        "but most skills won't need all of them.",
+        "directory specification:"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "skill-vetter-1-0-0",
+      "name": "Skill Vetter 🔒",
+      "description": "Security-first vetting protocol for AI agent skills. **Never install a skill without vetting it first.**",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\skill-vetter-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [
+        "it have?",
+        "it need to read?",
+        "it need to write?",
+        "it run?",
+        "it need network access? To where?"
+      ],
+      "inputs": [
+        "• Modifies system files outside workspace"
+      ],
+      "outputs": [
+        "Format"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "social-content-generator-0-1-0",
+      "name": "Social Content",
+      "description": "You are an expert social media strategist with direct access to a scheduling platform that publishes to all major social networks. Your goal is to help create engaging content that builds audience, dr",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\social-content-generator-0.1.0\\SKILL.md",
+      "category": [
+        "people",
+        "sparingly",
+        "and",
+        "genuinely",
+        "someone",
+        "who",
+        "needs",
+        "this\""
+      ],
+      "capabilities": [
+        "your audience ask?",
+        "you create video content?"
+      ],
+      "inputs": [],
+      "outputs": [
+        "Proven Patterns + Right Voice = Performance"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "social-media-scheduler-1-0-0",
+      "name": "Social Media Scheduler",
+      "description": "You are a social media content planning assistant. Help users plan, draft, and organize their social media presence.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\social-media-scheduler-1.0.0\\SKILL.md",
+      "category": [
+        "-",
+        "CTA",
+        "(call",
+        "to",
+        "action)",
+        "in",
+        "comment",
+        "Strategy",
+        "three",
+        "tiers:"
+      ],
+      "capabilities": [
+        "### 1. Content Calendar"
+      ],
+      "inputs": [],
+      "outputs": [
+        "Format",
+        "in a clean",
+        "copy-paste-ready format. Include character counts for platform-limited posts. Group by day or platform as requested."
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "supabase-postgres-best-practices",
+      "name": "Supabase Postgres Best Practices",
+      "description": "Comprehensive performance optimization guide for Postgres, maintained by Supabase. Contains rules across 8 categories, prioritized by impact to guide automated query optimization and schema design.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\supabase-postgres-best-practices\\SKILL.md",
+      "category": [
+        "by",
+        "Priority",
+        "|",
+        "Impact",
+        "Prefix"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "or metrics"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "test-runner-1-0-0",
+      "name": "test-runner",
+      "description": "Write and run tests across languages and frameworks.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\test-runner-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "pytest --cov=app --cov-fail-under=80  # Fail if < 80%"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "tmux-1-0-0",
+      "name": "tmux Skill (Clawdbot)",
+      "description": "Use tmux only when you need an interactive TTY. Prefer bash background mode for long-running, non-interactive tasks.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\tmux-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "safely"
+      ],
+      "outputs": [
+        "- Capture recent history: `tmux -S \"$SOCKET\" capture-pane -p -J -t target -S -200`.",
+        "from completed session"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "ui-ux-pro-max-0-1-0",
+      "name": "ui-ux-pro-max-0.1.0",
+      "description": "",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\ui-ux-pro-max-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "with minimal back-and-forth.",
+        "(ASCII-friendly).",
+        "Standards"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "video-frames-1-0-0",
+      "name": "Video Frames (ffmpeg)",
+      "description": "Extract a single frame from a video, or create quick thumbnails for inspection.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\video-frames-1.0.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "video-marketing",
+      "name": "Video Marketing Expert",
+      "description": "Глубокая экспертиза в стратегии видео-контента, производстве и дистрибуции на всех платформах.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\video-marketing\\SKILL.md",
+      "category": [
+        "-",
+        "Primary",
+        "keyword",
+        "first",
+        "recommended",
+        "Use",
+        "trending",
+        "hashtags",
+        "sparingly",
+        "in"
+      ],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "windows-control",
+      "name": "Windows Control Skill",
+      "description": "Full desktop automation for Windows. Control mouse, keyboard, and screen like a human user.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\windows-control\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "writing-plans-0-1-0",
+      "name": "Writing Plans",
+      "description": "> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\writing-plans-0.1.0\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [],
+      "outputs": [
+        "- Reference relevant skills with @ syntax"
+      ],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    },
+    {
+      "id": "zerotoken-openclaw",
+      "name": "ZeroToken 浏览器自动化（OpenClaw）",
+      "description": "教会 Agent 使用 ZeroToken MCP 做浏览器自动化、轨迹录制与脚本重放。旨在让 **OpenClaw 执行定时/重复任务时尽量少消耗 Token**。",
+      "location": "C:\\Users\\Administrator\\.agents\\skills\\zerotoken-openclaw\\SKILL.md",
+      "category": [],
+      "capabilities": [],
+      "inputs": [
+        "| 在输入框内输入用户名、密码、搜索关键字等     |",
+        "| browser_input |"
+      ],
+      "outputs": [],
+      "compatibility": [],
+      "load_skills": [],
+      "category_priority": 5,
+      "source": "local"
+    }
+  ],
+  "combos": [
+    {
+      "name": "frontend-dev",
+      "description": "Frontend design to implementation pipeline",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "frontend-design",
+        "ts-react-nextjs"
+      ]
+    },
+    {
+      "name": "frontend-vue",
+      "description": "Vue frontend pipeline: UI/UX design followed by TypeScript and Vue/Svelte implementation",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "frontend-design",
+        "ts-vue-svelte"
+      ]
+    },
+    {
+      "name": "api-first",
+      "description": "API design to implementation: RESTful API design, Python patterns, and testing strategies",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "api-rest-design",
+        "python-patterns",
+        "testing-strategies"
+      ]
+    },
+    {
+      "name": "deploy-pipeline",
+      "description": "Full deployment pipeline: testing strategies, containerization with Docker, and Kubernetes deployment",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "testing-strategies",
+        "docker-patterns",
+        "kubernetes-patterns"
+      ]
+    },
+    {
+      "name": "code-review-partial",
+      "description": "Code review with performance checks (security auditor skill not available in base registry)",
+      "type": "parallel",
+      "execution": "parallel",
+      "skills": [
+        "performance-optimization",
+        "testing-strategies"
+      ]
+    },
+    {
+      "name": "skill-audit",
+      "description": "Audit a skill's quality: evaluate skill design and judge quality in parallel",
+      "type": "parallel",
+      "execution": "parallel",
+      "skills": [
+        "skill-creator",
+        "skill-judge"
+      ]
+    },
+    {
+      "name": "docs-pipeline",
+      "description": "Documentation creation pipeline: code docs followed by project docs",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "code-docs",
+        "project-docs"
+      ]
+    },
+    {
+      "name": "git-workflow",
+      "description": "Git workflow: commit message generation followed by release preparation",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "git-commit",
+        "git-release"
+      ]
+    },
+    {
+      "name": "content-creation",
+      "description": "Content creation with research and writing",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "content-research-writer",
+        "humanizer"
+      ]
+    },
+    {
+      "name": "research-report",
+      "description": "Content research followed by humanized writing",
+      "type": "chain",
+      "execution": "serial",
+      "skills": [
+        "content-research-writer",
+        "humanizer"
+      ],
+      "schema": {
+        "input": {
+          "topic": "The research topic"
+        },
+        "output": {
+          "report": "Final humanized markdown report"
+        }
+      }
+    },
+    {
+      "name": "subagent-fullstack",
+      "description": "Full-stack dev: research and design in parallel, then implement, test, and docs",
+      "type": "subagent",
+      "execution": "serial",
+      "skills": [],
+      "subagent_steps": [
+        {
+          "name": "research",
+          "skills": [
+            "context7"
+          ],
+          "prompt": "Research best practices and patterns for the requested feature",
+          "depends_on": []
+        },
+        {
+          "name": "design",
+          "skills": [
+            "architecture-designer",
+            "api-rest-design"
+          ],
+          "prompt": "Design the system architecture and API based on research findings",
+          "depends_on": [
+            "research"
+          ],
+          "context_from": [
+            "research"
+          ]
+        },
+        {
+          "name": "implement",
+          "skills": [
+            "python-patterns",
+            "ts-react-nextjs"
+          ],
+          "prompt": "Implement the feature based on the design output",
+          "depends_on": [
+            "design"
+          ],
+          "context_from": [
+            "design"
+          ]
+        },
+        {
+          "name": "test",
+          "skills": [
+            "testing-strategies",
+            "security-auditor"
+          ],
+          "prompt": "Write tests and run security audit on the implementation",
+          "depends_on": [
+            "implement"
+          ],
+          "context_from": [
+            "implement"
+          ]
+        },
+        {
+          "name": "docs",
+          "skills": [
+            "code-docs",
+            "project-docs"
+          ],
+          "prompt": "Generate code documentation and project documentation",
+          "depends_on": [
+            "test"
+          ],
+          "context_from": [
+            "test"
+          ]
+        }
+      ],
+      "subagent_aggregation": "structured",
+      "subagent_error_strategy": "continue",
+      "timeout": 600000
+    },
+    {
+      "name": "subagent-security-audit",
+      "description": "Parallel security audit with multiple subagents",
+      "type": "subagent",
+      "execution": "serial",
+      "skills": [],
+      "subagent_steps": [
+        {
+          "name": "vuln-scan",
+          "skills": [
+            "security-auditor"
+          ],
+          "prompt": "Run vulnerability scan on the codebase",
+          "depends_on": []
+        },
+        {
+          "name": "auth-check",
+          "skills": [
+            "security-best-practices"
+          ],
+          "prompt": "Check authentication and authorization patterns",
+          "depends_on": []
+        },
+        {
+          "name": "dependency-audit",
+          "skills": [
+            "clawdefender"
+          ],
+          "prompt": "Audit dependencies for known vulnerabilities",
+          "depends_on": []
+        },
+        {
+          "name": "report",
+          "skills": [
+            "humanizer"
+          ],
+          "prompt": "Compile security audit findings into a human-readable report",
+          "depends_on": [
+            "vuln-scan",
+            "auth-check",
+            "dependency-audit"
+          ],
+          "context_from": [
+            "vuln-scan",
+            "auth-check",
+            "dependency-audit"
+          ]
+        }
+      ],
+      "subagent_aggregation": "structured",
+      "subagent_error_strategy": "continue",
+      "timeout": 300000
+    }
+  ],
+  "timestamp": 1777047904408
+}

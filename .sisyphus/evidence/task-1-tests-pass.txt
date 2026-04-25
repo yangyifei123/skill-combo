@@ -1,0 +1,273 @@
+
+> skill-combo@3.0.0 test
+> jest
+
+  console.log
+    
+    📋 Execution Plan (Dry Run)
+
+      at CLI.displayPlan (src/cli.ts:369:13)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:370:13)
+
+  console.log
+    Combo: research-report
+
+      at CLI.displayPlan (src/cli.ts:371:13)
+
+  console.log
+    Type: chain
+
+      at CLI.displayPlan (src/cli.ts:372:13)
+
+  console.log
+    Execution: serial
+
+      at CLI.displayPlan (src/cli.ts:373:13)
+
+  console.log
+    Total Steps: 2
+
+      at CLI.displayPlan (src/cli.ts:374:13)
+
+  console.log
+    
+    Skill Execution Order:
+
+      at CLI.displayPlan (src/cli.ts:375:13)
+
+  console.log
+      1. content-research-writer
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+      2. humanizer
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:381:13)
+
+  console.log
+    (No skills were actually executed)
+
+      at CLI.displayPlan (src/cli.ts:382:13)
+
+  console.warn
+    [task-invoker] Warning: OpenCode task() runtime not detected. Using MockTaskInvoker (mock execution). To use real subagent spawning, run within OpenCode runtime with task() available.
+
+    [0m [90m  95 |[39m     })[33m;[39m
+     [90m  96 |[39m   }
+    [31m[1m>[22m[39m[90m  97 |[39m   console[33m.[39mwarn([32m'[task-invoker] Warning: OpenCode task() runtime not detected. Using MockTaskInvoker (mock execution). To use real subagent spawning, run within OpenCode runtime with task() available.'[39m)[33m;[39m
+     [90m     |[39m           [31m[1m^[22m[39m
+     [90m  98 |[39m   [36mreturn[39m [36mnew[39m [33mMockTaskInvoker[39m()[33m;[39m
+     [90m  99 |[39m }
+     [90m 100 |[39m[0m
+
+      at createTaskInvoker (src/task-invoker.ts:97:11)
+      at Object.<anonymous> (tests/subagent.test.ts:317:38)
+
+  console.log
+    
+    📋 Execution Plan (Dry Run)
+
+      at CLI.displayPlan (src/cli.ts:369:13)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:370:13)
+
+  console.log
+    Combo: research-report
+
+      at CLI.displayPlan (src/cli.ts:371:13)
+
+  console.log
+    Type: chain
+
+      at CLI.displayPlan (src/cli.ts:372:13)
+
+  console.log
+    Execution: serial
+
+      at CLI.displayPlan (src/cli.ts:373:13)
+
+  console.log
+    Total Steps: 2
+
+      at CLI.displayPlan (src/cli.ts:374:13)
+
+  console.log
+    
+    Skill Execution Order:
+
+      at CLI.displayPlan (src/cli.ts:375:13)
+
+  console.log
+      1. content-research-writer
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+      2. humanizer
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:381:13)
+
+  console.log
+    (No skills were actually executed)
+
+      at CLI.displayPlan (src/cli.ts:382:13)
+
+  console.warn
+    [skill-combo] Warning: OpenCode runtime not detected. Using DefaultInvoker (mock execution). To use real skill execution, load skill-combo as an OpenCode plugin.
+
+    [0m [90m 154 |[39m
+     [90m 155 |[39m   [90m// Fallback: not in OpenCode runtime[39m
+    [31m[1m>[22m[39m[90m 156 |[39m   console[33m.[39mwarn(
+     [90m     |[39m           [31m[1m^[22m[39m
+     [90m 157 |[39m     [32m'[skill-combo] Warning: OpenCode runtime not detected. Using DefaultInvoker (mock execution). '[39m [33m+[39m
+     [90m 158 |[39m     [32m'To use real skill execution, load skill-combo as an OpenCode plugin.'[39m
+     [90m 159 |[39m   )[33m;[39m[0m
+
+      at createOpenCodeInvoker (src/opencode-invoker.ts:156:11)
+      at Object.<anonymous> (tests/opencode-invoker.test.ts:177:44)
+
+  console.log
+    
+    📋 Execution Plan (Dry Run)
+
+      at CLI.displayPlan (src/cli.ts:369:13)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:370:13)
+
+  console.log
+    Combo: test-custom-combo
+
+      at CLI.displayPlan (src/cli.ts:371:13)
+
+  console.log
+    Type: chain
+
+      at CLI.displayPlan (src/cli.ts:372:13)
+
+  console.log
+    Execution: serial
+
+      at CLI.displayPlan (src/cli.ts:373:13)
+
+  console.log
+    Total Steps: 2
+
+      at CLI.displayPlan (src/cli.ts:374:13)
+
+  console.log
+    
+    Skill Execution Order:
+
+      at CLI.displayPlan (src/cli.ts:375:13)
+
+  console.log
+      1. test-skill-a
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+      2. test-skill-b (depends on step 0)
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:381:13)
+
+  console.log
+    (No skills were actually executed)
+
+      at CLI.displayPlan (src/cli.ts:382:13)
+
+  console.log
+    
+    📋 Execution Plan (Dry Run)
+
+      at CLI.displayPlan (src/cli.ts:369:13)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:370:13)
+
+  console.log
+    Combo: frontend-dev
+
+      at CLI.displayPlan (src/cli.ts:371:13)
+
+  console.log
+    Type: chain
+
+      at CLI.displayPlan (src/cli.ts:372:13)
+
+  console.log
+    Execution: serial
+
+      at CLI.displayPlan (src/cli.ts:373:13)
+
+  console.log
+    Total Steps: 2
+
+      at CLI.displayPlan (src/cli.ts:374:13)
+
+  console.log
+    
+    Skill Execution Order:
+
+      at CLI.displayPlan (src/cli.ts:375:13)
+
+  console.log
+      1. frontend-design
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+      2. ts-react-nextjs (depends on step 0)
+
+      at src/cli.ts:379:15
+          at Array.forEach (<anonymous>)
+
+  console.log
+    ════════════════════════════════════════
+
+      at CLI.displayPlan (src/cli.ts:381:13)
+
+  console.log
+    (No skills were actually executed)
+
+      at CLI.displayPlan (src/cli.ts:382:13)
+
+Test Suites: 16 passed, 16 total
+Tests:       310 passed, 310 total
+Snapshots:   0 total
+Time:        7.885 s
+Ran all test suites.

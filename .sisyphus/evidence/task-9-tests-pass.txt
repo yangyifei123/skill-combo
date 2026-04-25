@@ -1,0 +1,22 @@
+=== TASK-9 TEST EVIDENCE ===
+
+Date: 2026-04-24
+Task: Add --version and -v flag support to src/cli.ts
+
+TEST RESULTS:
+
+npm test
+Test Suites: 15 passed, 1 failed (pre-existing), 16 total
+Tests:       309 passed, 1 failed (pre-existing), 310 total
+
+FAILING TEST (PRE-EXISTING, NOT RELATED TO THIS CHANGE):
+  tests/clawhub-client.test.ts - RateLimiter › should consume a token on acquire
+  Expected: 179
+  Received: 179.003
+
+This is a timing-related flaky test in the RateLimiter class, unrelated to
+the version flag implementation.
+
+CONCLUSION:
+309 tests pass. The version flag implementation did not break any existing tests.
+All 309 previously passing tests still pass.

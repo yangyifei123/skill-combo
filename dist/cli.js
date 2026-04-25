@@ -46,7 +46,25 @@ const registry_1 = require("./registry");
 const scanner_1 = require("./scanner");
 const colors_1 = require("./colors");
 const opencode_invoker_1 = require("./opencode-invoker");
+const session_provider_1 = require("./session-provider");
+const pattern_miner_1 = require("./pattern-miner");
+const skill_generator_1 = require("./skill-generator");
+const remote_scanner_1 = require("./remote-scanner");
+const clawhub_client_1 = require("./clawhub-client");
 const REGISTRY_FILE = '.skill-combo-registry.json';
+/**
+ * Adapt ClawHubClient to ClawHubClientLike (cursor string -> options object)
+ */
+function adaptClient(client) {
+    return {
+        async listSkills(cursor) {
+            return client.listSkills({ cursor });
+        },
+        async searchSkills(query) {
+            return client.searchSkills(query);
+        },
+    };
+}
 /**
  * Display execution statistics in verbose mode
  */
@@ -360,6 +378,9 @@ class CLI {
                 case 'combos':
                     this.printCombosHelp();
                     break;
+                case 'search':
+                    this.printSearchHelp();
+                    break;
                 default:
                     console.log(`Unknown command: ${subcommand}`);
                     this.printHelp();
@@ -381,6 +402,8 @@ Commands:
   list      - List all discovered skills (auto-loads registry)
   combos    - List all registered combos
   run       - Execute a combo by name (auto-loads registry)
+  search    - Search ClawHub remote registry for skills
+  extract   - Extract skill patterns from session history
   help      - Show this help message
 
 Use 'skill-combo help <command>' for detailed help on a specific command.
@@ -401,20 +424,31 @@ Options:
 skill-combo scan - Scan skill directories and index skills
 
 Usage:
-  skill-combo scan [--save] [--json]
+  skill-combo scan [--save] [--remote] [--force] [--limit=N] [--sort=MODE] [--json]
 
 Options:
-  --save    Save registry snapshot to .skill-combo-registry.json
-  --json    Output results as machine-readable JSON (single line)
+  --save          Save registry snapshot to .skill-combo-registry.json
+  --remote        Also fetch skills from ClawHub remote registry
+  --force         Bypass cache for remote fetch (use with --remote)
+  --limit=N       Limit number of remote skills fetched (use with --remote)
+  --sort=MODE     Sort remote results: updated|downloads|stars|trending (use with --remote)
+  --json          Output results as machine-readable JSON (single line)
 
 Description:
   Scans the OpenCode skills directories to discover and index all available skills.
   The scan results are stored in the registry and can be accessed using the 'list' command.
   Use --save to persist the registry for auto-loading by list and run commands.
 
+  With --remote, also fetches skills from ClawHub and merges them into the registry.
+  Remote skills are tagged [R] in the list output. Skills installed locally that also
+  exist on ClawHub are tagged [L+R].
+
 Examples:
   skill-combo scan
   skill-combo scan --save
+  skill-combo scan --remote --save
+  skill-combo scan --remote --force --limit=50
+  skill-combo scan --remote --sort=stars --save
   skill-combo scan --json
 
 Output:
@@ -477,17 +511,30 @@ JSON Mode:
 skill-combo list - List all discovered skills
 
 Usage:
-  skill-combo list [--json]
+  skill-combo list [--source=FILTER] [--json]
 
 Options:
-  --json    Output results as machine-readable JSON (single line)
+  --source=FILTER  Filter by source: all|local|remote (default: all)
+  --json           Output results as machine-readable JSON (single line)
 
 Description:
   Lists all skills that have been discovered by the scan command.
   Use 'skill-combo scan' first to discover skills.
 
+  Source filters:
+    all     - Show all skills (default)
+    local   - Show only locally installed skills
+    remote  - Show only remote-only skills (from ClawHub, not installed)
+
+  Indicators:
+    [L]   - Local skill only
+    [R]   - Remote-only skill (not installed locally)
+    [L+R] - Local skill with remote metadata (also available on ClawHub)
+
 Examples:
   skill-combo list
+  skill-combo list --source=local
+  skill-combo list --source=remote
   skill-combo list --json
 
 Output:
@@ -522,6 +569,38 @@ Output:
   With --json: { "combos": [...], "count": number }
 `);
     }
+    /**
+     * Print detailed help for search command
+     */
+    printSearchHelp() {
+        console.log(`
+skill-combo search - Search ClawHub remote registry for skills
+
+Usage:
+  skill-combo search <query> [--limit=N] [--json]
+
+Arguments:
+  query    Search query string
+
+Options:
+  --limit=N  Maximum number of results (default: 20)
+  --json     Output results as machine-readable JSON (single line)
+
+Description:
+  Searches the ClawHub remote skill registry for skills matching the query.
+  Results are marked with [R] indicator (remote).
+
+Examples:
+  skill-combo search testing
+  skill-combo search "rest api"
+  skill-combo search python --limit=10
+  skill-combo search security --json
+
+Output:
+  Shows matching skills with [R] indicator, name, and description.
+  With --json: { "skills": [...], "count": number, "query": string }
+`);
+    }
 }
 exports.CLI = CLI;
 /**
@@ -552,6 +631,11 @@ async function main(args) {
     const cli = new CLI();
     const command = args[0] || 'help';
     switch (command) {
+        case '--version':
+        case '-v': {
+            console.log(require('../package.json').version);
+            process.exit(0);
+        }
         case 'scan': {
             // Parse flags for scan command
             const rawFlags = args.slice(1).filter(a => a.startsWith('--'));
@@ -561,13 +645,112 @@ async function main(args) {
             });
             const save = flags.includes('--save');
             const jsonOutput = flags.includes('--json');
+            const remote = flags.includes('--remote');
+            const forceRemote = flags.includes('--force');
+            const getFlagValue = (flag, fallback) => {
+                for (const f of rawFlags) {
+                    const eqIdx = f.indexOf('=');
+                    if (f.substring(0, eqIdx) === flag)
+                        return f.substring(eqIdx + 1);
+                }
+                return fallback;
+            };
+            const remoteLimit = parseInt(getFlagValue('--limit', '0'), 10) || undefined;
+            const remoteSort = getFlagValue('--sort', '');
+            // Local scan always runs
             if (jsonOutput) {
                 const result = await cli.scan(save, true);
-                console.log(JSON.stringify({ skills: result.skills, errors: result.errors, timestamp: result.timestamp }));
+                let remoteCount = 0;
+                if (remote) {
+                    try {
+                        const client = new clawhub_client_1.ClawHubClient();
+                        const scanner = new remote_scanner_1.RemoteScanner(adaptClient(client));
+                        const remoteResult = await scanner.scan({ force: forceRemote, limit: remoteLimit, sort: remoteSort || undefined });
+                        cli.getRegistry().mergeRemoteSkills(remoteResult.skills);
+                        remoteCount = remoteResult.skills.length;
+                    }
+                    catch (e) {
+                        console.error((0, colors_1.colorize)(`Remote scan failed: ${e.message}`, colors_1.warning));
+                    }
+                }
+                const allSkills = cli.getRegistry().getAllSkills();
+                console.log(JSON.stringify({ skills: allSkills, remoteCount, timestamp: result.timestamp }));
             }
             else {
                 const result = await cli.scan(save);
-                console.log((0, colors_1.colorize)(`Scan complete: ${result.skills} skills found, ${result.errors} errors`, result.errors > 0 ? colors_1.warning : colors_1.success));
+                let remoteCount = 0;
+                if (remote) {
+                    try {
+                        const client = new clawhub_client_1.ClawHubClient();
+                        const scanner = new remote_scanner_1.RemoteScanner(adaptClient(client));
+                        const remoteResult = await scanner.scan({ force: forceRemote, limit: remoteLimit, sort: remoteSort || undefined });
+                        cli.getRegistry().mergeRemoteSkills(remoteResult.skills);
+                        remoteCount = remoteResult.skills.length;
+                        if (save)
+                            cli.saveRegistry();
+                    }
+                    catch (e) {
+                        console.error((0, colors_1.colorize)(`Remote scan failed: ${e.message}`, colors_1.warning));
+                    }
+                }
+                console.log((0, colors_1.colorize)(`Scan complete: ${result.skills} local skills found, ${result.errors} errors`, result.errors > 0 ? colors_1.warning : colors_1.success));
+                if (remote && remoteCount > 0) {
+                    console.log((0, colors_1.colorize)(`  + ${remoteCount} remote skills from ClawHub`, colors_1.info));
+                }
+            }
+            break;
+        }
+        case 'search': {
+            const query = args[1];
+            if (!query) {
+                console.error('Usage: skill-combo search <query> [--limit=N] [--json]');
+                process.exit(1);
+            }
+            const searchFlags = args.slice(2).filter(a => a.startsWith('--'));
+            const searchFlagNames = searchFlags.map(f => {
+                const eqIdx = f.indexOf('=');
+                return eqIdx === -1 ? f : f.substring(0, eqIdx);
+            });
+            const jsonOutput = searchFlagNames.includes('--json');
+            const getFlagValue = (flag, fallback) => {
+                for (const f of searchFlags) {
+                    const eqIdx = f.indexOf('=');
+                    if (f.substring(0, eqIdx) === flag)
+                        return f.substring(eqIdx + 1);
+                }
+                return fallback;
+            };
+            const searchLimit = parseInt(getFlagValue('--limit', '20'), 10);
+            console.log((0, colors_1.colorize)(`🔍 Searching ClawHub for "${query}"...`, colors_1.info));
+            try {
+                const client = new clawhub_client_1.ClawHubClient();
+                const scanner = new remote_scanner_1.RemoteScanner(adaptClient(client));
+                const remoteResult = await scanner.scan({ search: query, limit: searchLimit });
+                if (remoteResult.errors.length > 0) {
+                    remoteResult.errors.forEach(e => {
+                        console.error((0, colors_1.colorize)(`  Error: ${e.message}`, colors_1.warning));
+                    });
+                }
+                const skills = remoteResult.skills.slice(0, searchLimit);
+                if (jsonOutput) {
+                    console.log(JSON.stringify({ skills, count: skills.length, query }));
+                }
+                else {
+                    if (skills.length === 0) {
+                        console.log((0, colors_1.colorize)('  No results found.', colors_1.warning));
+                    }
+                    else {
+                        console.log(`Found ${skills.length} result(s):`);
+                        skills.forEach(s => {
+                            const owner = s.remote?.remoteOwner ? ` by ${s.remote.remoteOwner}` : '';
+                            console.log(`  [R] ${s.id}: ${s.description}${owner}`);
+                        });
+                    }
+                }
+            }
+            catch (e) {
+                console.error((0, colors_1.colorize)(`Search failed: ${e.message}`, colors_1.error));
+                process.exit(1);
             }
             break;
         }
@@ -578,14 +761,30 @@ async function main(args) {
                 return eqIdx === -1 ? f : f.substring(0, eqIdx);
             });
             const jsonOutput = flags.includes('--json');
-            const result = cli.listSkills();
+            const getFlagValue = (flag, fallback) => {
+                for (const f of rawFlags) {
+                    const eqIdx = f.indexOf('=');
+                    if (f.substring(0, eqIdx) === flag)
+                        return f.substring(eqIdx + 1);
+                }
+                return fallback;
+            };
+            const sourceFilter = getFlagValue('--source', 'all');
+            let skills = cli.getRegistry().getAllSkills();
+            if (sourceFilter === 'local') {
+                skills = cli.getRegistry().getInstalledSkills();
+            }
+            else if (sourceFilter === 'remote') {
+                skills = cli.getRegistry().getRemoteOnlySkills();
+            }
             if (jsonOutput) {
-                console.log(JSON.stringify({ skills: result.skills, count: result.count }));
+                console.log(JSON.stringify({ skills: skills.map(s => ({ id: s.id, name: s.name, description: s.description, source: s.source })), count: skills.length, sourceFilter }));
             }
             else {
-                console.log(`Found ${result.count} skills:`);
-                result.skills.forEach(s => {
-                    console.log(`  - ${s.id}: ${s.description}`);
+                console.log(`Found ${skills.length} skills (source: ${sourceFilter}):`);
+                skills.forEach(s => {
+                    const indicator = s.source === 'local' && s.remote ? '[L+R]' : s.source === 'local' ? '[L]' : '[R]';
+                    console.log(`  ${indicator} ${s.id}: ${s.description}`);
                 });
             }
             break;
@@ -690,6 +889,73 @@ async function main(args) {
                 console.error((0, colors_1.colorize)('✗ Combo execution failed:', colors_1.error));
                 result.errors.forEach(err => { console.error((0, colors_1.colorize)(`  - ${err}`, colors_1.error)); });
                 process.exit(1);
+            }
+            break;
+        }
+        case 'extract': {
+            // skill-combo extract [--min-score=50] [--max=5] [--output-dir=./generated-skills/]
+            const rawFlags = args.slice(2).filter(a => a.startsWith('--'));
+            const flags = rawFlags.map(f => {
+                const eqIdx = f.indexOf('=');
+                return eqIdx === -1 ? f : f.substring(0, eqIdx);
+            });
+            const getFlagValue = (flag, fallback) => {
+                for (const f of rawFlags) {
+                    const eqIdx = f.indexOf('=');
+                    if (f.substring(0, eqIdx) === flag)
+                        return f.substring(eqIdx + 1);
+                }
+                return fallback;
+            };
+            const minScore = parseInt(getFlagValue('--min-score', '50'), 10);
+            const maxSkills = parseInt(getFlagValue('--max', '5'), 10);
+            const outputDir = getFlagValue('--output-dir', './generated-skills/');
+            const jsonOutput = flags.includes('--json');
+            // Validate output-dir: prevent path traversal
+            const resolvedOutputDir = path.resolve(outputDir);
+            if (outputDir.includes('..')) {
+                console.error((0, colors_1.colorize)('✗ --output-dir cannot contain ".." (path traversal not allowed).', colors_1.error));
+                process.exit(1);
+            }
+            console.log((0, colors_1.colorize)('🔍 Analyzing sessions for skill extraction patterns...', colors_1.info));
+            const provider = (0, session_provider_1.createSessionProvider)();
+            if (!provider.isAvailable()) {
+                console.error((0, colors_1.colorize)('✗ No session data available. Run within OpenCode or provide prompt-history.jsonl.', colors_1.error));
+                process.exit(1);
+            }
+            const sessions = await provider.listSessions(20);
+            if (sessions.length === 0) {
+                console.error((0, colors_1.colorize)('✗ No sessions found.', colors_1.error));
+                process.exit(1);
+            }
+            console.log((0, colors_1.colorize)(`  Found ${sessions.length} session(s)`, colors_1.info));
+            const miner = new pattern_miner_1.PatternMiner({
+                min_worthiness: minScore,
+                max_skills: maxSkills,
+                output_dir: outputDir,
+            });
+            const patterns = miner.mine(sessions);
+            if (patterns.length === 0) {
+                console.log((0, colors_1.colorize)('  No skill-worthy patterns found. Try lowering --min-score.', colors_1.warning));
+                process.exit(0);
+            }
+            console.log((0, colors_1.colorize)(`  Found ${patterns.length} pattern(s) above score ${minScore}`, colors_1.success));
+            const generator = new skill_generator_1.SkillGenerator();
+            const results = patterns.map(p => {
+                const skill = generator.generate(p);
+                const filePath = generator.save(skill, resolvedOutputDir);
+                return { ...skill, file_path: filePath };
+            });
+            if (jsonOutput) {
+                console.log(JSON.stringify({ success: true, patterns: results }, null, 2));
+            }
+            else {
+                for (const r of results) {
+                    console.log((0, colors_1.colorize)(`  ✓ Generated: ${r.file_path}`, colors_1.success));
+                    console.log(`    Name: ${r.name}`);
+                    console.log(`    Score: ${r.worthiness_score}/100`);
+                    console.log(`    Pattern: ${r.patterns_used.join(' → ')}`);
+                }
             }
             break;
         }

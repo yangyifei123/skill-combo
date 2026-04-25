@@ -1,0 +1,28 @@
+# Task 5: bin/skill-combo.js - Evidence
+
+## File Created
+- Path: bin/skill-combo.js
+- Content:
+  Line 1: #!/usr/bin/env node
+  Line 2: require('../dist/cli.js')
+
+## Line Ending Verification
+Hex dump at position 0x15 shows `0A` (LF) - NO `0D` (CR)
+```
+00000010   6F 64 65 0A 72 65 71 75 69 72 65 28 27 2E 2E 2F  ode.require('../
+```
+Confirmed: Unix LF line endings (not Windows CRLF)
+
+## npm link Verification
+```
+$ npm list -g --depth=0 | Select-String skill-combo
+`-- skill-combo@3.0.0 -> .\E:\AI_field\skill-combo
+```
+
+Status: SUCCESS - package linked globally
+
+## Summary
+- bin/skill-combo.js created with shebang + require wrapper
+- Unix LF line endings confirmed
+- npm link succeeded
+- Ready for `npx skill-combo` and `skill-combo` command execution

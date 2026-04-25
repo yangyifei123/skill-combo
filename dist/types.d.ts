@@ -18,12 +18,16 @@ export interface Skill {
     /** Skills that work well with this one (for combo planning) */
     compatibility: string[];
     category_priority: number;
+    /** Skill origin source - local (installed) or remote (ClawHub catalog) */
+    source?: SkillSource;
+    /** Remote metadata if skill is from ClawHub (composition pattern) */
+    remote?: RemoteSkillMeta;
 }
 /**
  * Combo Type - structural patterns for skill composition
  * These define HOW skills are composed together
  */
-export type ComboType = 'chain' | 'parallel' | 'wrap' | 'conditional';
+export type ComboType = 'chain' | 'parallel' | 'wrap' | 'conditional' | 'subagent';
 /**
  * Execution Mode - HOW skills actually run (serial vs parallel vs interleaved)
  * These define WHEN skills execute relative to each other
@@ -67,6 +71,111 @@ export interface Combo {
     /** Tags for categorizing and discovering combos */
     tags?: string[];
 }
+/** Subagent aggregation strategy */
+export type SubagentAggregation = 'structured' | 'last-win' | 'merge';
+/** Subagent error handling strategy */
+export type SubagentErrorStrategy = 'fail-fast' | 'continue' | 'partial';
+/**
+ * SubagentStep - a single step in a subagent combo
+ * Each step spawns a subagent that loads one or more skills
+ */
+export interface SubagentStep {
+    /** Unique step name (used for dependency references and output keys) */
+    name: string;
+    /** Skills to load into this subagent via load_skills */
+    skills: string[];
+    /** Task prompt describing what the subagent should do */
+    prompt: string;
+    /** Names of steps this step depends on (must complete first) */
+    depends_on: string[];
+    /** Per-step timeout in ms (default: inherited from combo) */
+    timeout?: number;
+    /** Step names whose outputs to include in this step's context */
+    context_from?: string[];
+    /** Retry attempts for transient failures (default: 0) */
+    retry_count?: number;
+}
+/**
+ * SubagentCombo - a combo that orchestrates subagents
+ * Each subagent loads skill(s) via task() with load_skills
+ */
+export interface SubagentCombo extends Combo {
+    type: 'subagent';
+    /** Subagent steps with dependencies and skill assignments */
+    subagent_steps: SubagentStep[];
+    /** How to aggregate results from all subagent steps */
+    subagent_aggregation?: SubagentAggregation;
+    /** How to handle errors during subagent execution */
+    subagent_error_strategy?: SubagentErrorStrategy;
+}
+/**
+ * SubagentOutput - output from a subagent step
+ */
+export interface SubagentOutput extends SkillOutput {
+    /** Which subagent step produced this output */
+    step_name: string;
+    /** Skills loaded in this subagent */
+    skills_loaded: string[];
+}
+/** Options for spawning a subagent via task() */
+export interface TaskSpawnOptions {
+    /** OpenCode task category (e.g. 'quick', 'ultrabrain') */
+    category?: string;
+    /** Session ID for context sharing between subagents */
+    session_id?: string;
+    /** Timeout for this subagent spawn in ms */
+    timeout?: number;
+    /** Whether to run in background (async) */
+    run_in_background?: boolean;
+}
+/**
+ * TaskInvoker - interface for spawning subagents via OpenCode's task()
+ * DISTINCT from SkillInvoker which uses skill() for single skill invocation.
+ * TaskInvoker uses task() with load_skills to create subagents with skill sets.
+ */
+export interface TaskInvoker {
+    /**
+     * Spawn a subagent with given skills and prompt
+     * Returns subagent execution output
+     */
+    spawn(load_skills: string[], prompt: string, context: SkillContext, options?: TaskSpawnOptions): Promise<SubagentOutput>;
+    /**
+     * Check if task() runtime is available
+     */
+    isAvailable(): Promise<boolean>;
+}
+/** Wave of parallel subagent steps */
+export interface ExecutionWave {
+    /** Wave number (0-indexed) */
+    wave_number: number;
+    /** Steps in this wave (all run in parallel) */
+    steps: SubagentStep[];
+}
+/** Result of executing a wave */
+export interface WaveResult {
+    wave_number: number;
+    outputs: SubagentOutput[];
+    errors: string[];
+    success: boolean;
+}
+/** Subagent execution plan with waves */
+export interface SubagentExecutionPlan {
+    combo: SubagentCombo;
+    waves: ExecutionWave[];
+    aggregation: SubagentAggregation;
+    error_strategy: SubagentErrorStrategy;
+}
+/** Error handling decision for a failed subagent step */
+export type ErrorHandlingDecision = {
+    action: 'retry';
+    delay: number;
+} | {
+    action: 'continue';
+    skip: boolean;
+} | {
+    action: 'abort';
+    reason: string;
+};
 export interface ComboSchema {
     input: Record<string, string>;
     output: Record<string, string>;
@@ -327,5 +436,170 @@ export interface Cache {
  */
 export declare class NotImplementedError extends Error {
     constructor(feature: string, reason: string);
+}
+/** A single session message */
+export interface SessionMessage {
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: number;
+    tokens?: number;
+    tools?: string[];
+}
+/** A session summary for pattern analysis */
+export interface SessionSummary {
+    id: string;
+    title?: string;
+    messages: SessionMessage[];
+    start_time: number;
+    end_time: number;
+    total_tokens: number;
+}
+/** Pattern extracted from session analysis */
+export interface ExtractedPattern {
+    /** Pattern description (e.g., "skill-combo run → test → commit") */
+    description: string;
+    /** Skills involved in this pattern */
+    skills: string[];
+    /** Number of sessions where this pattern appears */
+    session_count: number;
+    /** Total occurrences across all sessions */
+    total_occurrences: number;
+    /** Skill-worthiness score (0-100) */
+    worthiness_score: number;
+}
+/** Skill-worthiness scoring criteria */
+export interface WorthinessScore {
+    frequency: number;
+    generalizability: number;
+    complexity_reduction: number;
+    error_reduction: number;
+    total: number;
+}
+/** Generated SKILL.md content */
+export interface GeneratedSkill {
+    name: string;
+    description: string;
+    content: string;
+    frontmatter: {
+        name: string;
+        description: string;
+        generated_from?: string;
+        extraction_date?: string;
+    };
+    patterns_used: string[];
+    worthiness_score: number;
+}
+/** Configuration for skill extraction */
+export interface ExtractionConfig {
+    /** Minimum sessions a pattern must appear in (default: 2) */
+    min_sessions?: number;
+    /** Minimum total occurrences (default: 3) */
+    min_occurrences?: number;
+    /** Maximum number of skills to generate (default: 5) */
+    max_skills?: number;
+    /** Output directory for generated SKILL.md files (default: ./generated-skills/) */
+    output_dir?: string;
+    /** Minimum worthiness score to generate (default: 50) */
+    min_worthiness?: number;
+}
+/** Session data provider interface */
+export interface SessionProvider {
+    /** List available sessions */
+    listSessions(limit?: number): Promise<SessionSummary[]>;
+    /** Get full session details */
+    getSession(id: string): Promise<SessionSummary | null>;
+    /** Check if provider is available */
+    isAvailable(): boolean;
+}
+/** Skill origin source */
+export type SkillSource = 'local' | 'remote';
+/** Remote skill metadata (composition, not flat fields on Skill) */
+export interface RemoteSkillMeta {
+    /** ClawHub slug (unique identifier) */
+    remoteSlug: string;
+    /** Latest version on ClawHub */
+    remoteVersion?: string;
+    /** Owner handle */
+    remoteOwner?: string;
+    /** Star count */
+    remoteStars?: number;
+    /** Download count (all time) */
+    remoteDownloads?: number;
+    /** When this metadata was fetched (epoch ms) */
+    remoteFetchedAt?: number;
+}
+/** ClawHub API skill item (from GET /api/v1/skills) */
+export interface ClawHubSkillItem {
+    slug: string;
+    displayName: string;
+    summary?: string;
+    tags?: Record<string, string>;
+    latestVersion?: {
+        version: string;
+        createdAt: number;
+        changelog?: string;
+    } | null;
+    metadata?: {
+        os?: string[] | null;
+        systems?: string[] | null;
+    } | null;
+    createdAt: number;
+    updatedAt: number;
+    owner?: {
+        handle?: string | null;
+        displayName?: string | null;
+        image?: string | null;
+    } | null;
+    stats?: {
+        stars?: number;
+        downloads?: number;
+        installsCurrent?: number;
+        installsAllTime?: number;
+    } | null;
+}
+/** ClawHub API list response */
+export interface ClawHubSkillListResponse {
+    items: ClawHubSkillItem[];
+    nextCursor?: string | null;
+}
+/** ClawHub API search response */
+export interface ClawHubSkillSearchResponse {
+    results: Array<{
+        score: number;
+        slug: string;
+        displayName: string;
+        summary?: string;
+        version?: string;
+        updatedAt?: number;
+    }>;
+    total?: number;
+}
+/** Remote scan options */
+export interface RemoteScanOptions {
+    limit?: number;
+    force?: boolean;
+    sort?: 'updated' | 'downloads' | 'stars' | 'trending';
+    search?: string;
+}
+/** Remote scan error */
+export interface RemoteScanError {
+    type: 'network' | 'rate-limit' | 'auth' | 'parse' | 'unknown';
+    message: string;
+    retryable: boolean;
+    retryAfter?: number;
+}
+/** Remote scan result */
+export interface RemoteScanResult {
+    skills: Skill[];
+    errors: RemoteScanError[];
+    timestamp: number;
+    cached: boolean;
+    source: 'clawhub';
+}
+/** Rate limiter configuration */
+export interface RateLimiterConfig {
+    maxTokens: number;
+    refillPerSecond: number;
 }
 //# sourceMappingURL=types.d.ts.map

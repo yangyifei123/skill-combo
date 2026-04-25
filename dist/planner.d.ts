@@ -1,4 +1,4 @@
-import { Combo, ExecutionPlan, IPlanner, Skill } from './types';
+import { Combo, ExecutionPlan, IPlanner, Skill, SubagentCombo, SubagentExecutionPlan } from './types';
 /**
  * Planner creates execution plans from combos
  * Respects skill load_skills dependencies via topological sort
@@ -6,7 +6,12 @@ import { Combo, ExecutionPlan, IPlanner, Skill } from './types';
 export declare class Planner implements IPlanner {
     constructor();
     /**
-     * Create an execution plan from a combo
+     * Create a subagent execution plan from a SubagentCombo
+     * Uses WaveScheduler to build dependency-ordered waves
+     */
+    planSubagent(combo: SubagentCombo): SubagentExecutionPlan;
+    /**
+      * Create an execution plan from a combo
      * Uses topological sort to respect load_skills dependencies
      */
     plan(combo: Combo, skills: Skill[]): ExecutionPlan;

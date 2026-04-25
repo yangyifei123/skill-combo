@@ -1,0 +1,33 @@
+=== TASK-9 VERSION FLAG EVIDENCE ===
+
+Date: 2026-04-24
+Task: Add --version and -v flag support to src/cli.ts
+
+VERIFICATION TESTS:
+
+Test 1: node dist/cli.js --version
+Output: 3.0.0
+Exit code: 0
+
+Test 2: node dist/cli.js -v
+Output: 3.0.0
+Exit code: 0
+
+IMPLEMENTATION:
+File modified: src/cli.ts
+Location: switch statement in main() function, lines 693-697
+
+Code added:
+    case '--version':
+    case '-v': {
+      console.log(require('../package.json').version);
+      process.exit(0);
+    }
+
+Pattern used as specified in task.
+
+BUILD:
+npm run build - SUCCESS
+
+CONCLUSION:
+Both --version and -v flags correctly output "3.0.0" and exit cleanly.

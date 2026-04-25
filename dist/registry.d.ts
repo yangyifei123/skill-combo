@@ -3,7 +3,7 @@
  *
  * Implements IRegistry interface from types.ts
  */
-import { Skill, Combo, IRegistry, SkillQuery, ValidationError } from './types';
+import { Skill, Combo, IRegistry, SkillQuery, SkillSource, ValidationError } from './types';
 export declare class Registry implements IRegistry {
     private skills;
     private combos;
@@ -58,6 +58,24 @@ export declare class Registry implements IRegistry {
      * Update last scan timestamp
      */
     updateScanTimestamp(): void;
+    /**
+     * Merge remote skills into the registry.
+     * - If a local skill with same id exists: attach remote metadata, keep source='local'
+     * - If not exists: add as source='remote'
+     */
+    mergeRemoteSkills(remoteSkills: Skill[]): void;
+    /**
+     * Get skills filtered by source
+     */
+    getSkillsBySource(source: SkillSource): Skill[];
+    /**
+     * Get installed skills (source='local')
+     */
+    getInstalledSkills(): Skill[];
+    /**
+     * Get remote-only skills (source='remote')
+     */
+    getRemoteOnlySkills(): Skill[];
     /**
      * Clear all skills and combos
      */

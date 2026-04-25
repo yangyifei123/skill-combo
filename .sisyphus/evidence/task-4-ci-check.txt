@@ -1,0 +1,66 @@
+# Task 4: CI Workflow Creation - Evidence
+
+## File Created
+- Path: .github/workflows/test.yml
+- Status: Created successfully
+
+## Verification Results
+
+### 1. File Exists
+Test-Path .github/workflows/test.yml = True
+
+### 2. Contains Required Steps
+- [x] npm run build step present
+- [x] npm test step present
+- [x] Node.js 18 configured
+- [x] npm ci step present
+- [x] actions/checkout@v4 used
+
+### 3. Triggers Correct
+- [x] push to main/master
+- [x] pull_request to main/master
+
+### 4. Existing Workflows Unchanged
+- [x] ai-review.yml - no changes detected
+- [x] format.yml - no changes detected
+
+### 5. Style Match
+- [x] 2-space indentation (matches format.yml)
+- [x] Uses actions/checkout@v4
+- [x] Uses actions/setup-node@v4 with cache: 'npm'
+- [x] Uses "name:" prefix for step names (matches ai-review.yml pattern)
+
+## Content Summary
+```yaml
+name: Test CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+```
+
+## Task Status: COMPLETE

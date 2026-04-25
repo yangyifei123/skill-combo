@@ -7,5 +7,14 @@ export { loadComboFromFile, loadCombosFromDirectory, loadDefaultCombos } from '.
 export { scanSkills, parseSkillFile, parseSkillMarkdown, ScanOptions } from './scanner';
 export { Cache, MemoryCache, computeCacheKey } from './cache';
 export { success, error, warning, info, dim, bold, supportsColor, colorize } from './colors';
+export { SubagentOrchestrator, SubagentConfig } from './subagent-orchestrator';
+export { WaveScheduler } from './wave-scheduler';
+export { OpenCodeTaskInvoker, MockTaskInvoker, createTaskInvoker } from './task-invoker';
+export { OpenCodeSessionProvider, JsonlSessionProvider, createSessionProvider } from './session-provider';
+export { PatternMiner } from './pattern-miner';
+export { SkillGenerator } from './skill-generator';
+export { ClawHubClient, RateLimiter } from './clawhub-client';
+export { RemoteScanner } from './remote-scanner';
+export type { SkillSource, RemoteSkillMeta, ClawHubSkillItem, ClawHubSkillListResponse, ClawHubSkillSearchResponse, RemoteScanOptions, RemoteScanResult, RemoteScanError } from './types';
 export * from './types';
 //# sourceMappingURL=index.d.ts.map

@@ -691,6 +691,11 @@ export async function main(args: string[]): Promise<void> {
   const command = args[0] || 'help';
 
   switch (command) {
+    case '--version':
+    case '-v': {
+      console.log(require('../package.json').version);
+      process.exit(0);
+    }
     case 'scan': {
       // Parse flags for scan command
       const rawFlags = args.slice(1).filter(a => a.startsWith('--'));
